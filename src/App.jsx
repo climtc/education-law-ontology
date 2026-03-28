@@ -158,6 +158,8 @@ const LAW_URLS = {
   "teacher-decree": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B5%90%EC%9B%90%EC%9D%98%EC%A7%80%EC%9C%84%ED%96%A5%EC%83%81%EB%B0%8F%EA%B5%90%EC%9C%A1%ED%99%9C%EB%8F%99%EB%B3%B4%ED%98%B8%EB%A5%BC%EC%9C%84%ED%95%9C%ED%8A%B9%EB%B3%84%EB%B2%95%EC%8B%9C%ED%96%89%EB%A0%B9",
   "finance-decree": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%A7%80%EB%B0%A9%EA%B5%90%EC%9C%A1%EC%9E%AC%EC%A0%95%EA%B5%90%EB%B6%80%EA%B8%88%EB%B2%95%EC%8B%9C%ED%96%89%EB%A0%B9",
   "elem-rule": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%B4%88%C2%B7%EC%A4%91%EB%93%B1%EA%B5%90%EC%9C%A1%EB%B2%95%EC%8B%9C%ED%96%89%EA%B7%9C%EC%B9%99",
+  "digital-edu": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EB%94%94%EC%A7%80%ED%84%B8%20%EA%B8%B0%EB%B0%98%EC%9D%98%20%EC%9B%90%EA%B2%A9%EA%B5%90%EC%9C%A1%20%ED%99%9C%EC%84%B1%ED%99%94%20%EA%B8%B0%EB%B3%B8%EB%B2%95",
+  "intl-coop": "https://www.law.go.kr/LSW/lsSc.do?menuId=1&subMenuId=15&tabMenuId=81&query=%EA%B5%AD%EC%A0%9C%EA%B0%9C%EB%B0%9C%ED%98%91%EB%A0%A5%EA%B8%B0%EB%B3%B8%EB%B2%95",
 };
 
 // ── 3. 색상 팔레트 ──
