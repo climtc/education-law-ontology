@@ -135,6 +135,31 @@ const POLICY_SCENARIOS = [
   { id: "governance", label: "교육자치 확대", description: "학교 단위 자율권 강화 및 국가교육위원회 역할 확대", laws: ["nec-law", "local-edu", "local-ord-1"], area: "06_교육거버넌스" },
 ];
 
+// ── 2-1. 법률 URL 매핑 (법제처 국가법령정보센터) ──
+const LAW_URLS = {
+  "constitution": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EB%8C%80%ED%95%9C%EB%AF%BC%EA%B5%AD%ED%97%8C%EB%B2%95",
+  "edu-basic": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B5%90%EC%9C%A1%EA%B8%B0%EB%B3%B8%EB%B2%95",
+  "elementary": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%B4%88%C2%B7%EC%A4%91%EB%93%B1%EA%B5%90%EC%9C%A1%EB%B2%95",
+  "higher-edu": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B3%A0%EB%93%B1%EA%B5%90%EC%9C%A1%EB%B2%95",
+  "early-child": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%9C%A0%EC%95%84%EA%B5%90%EC%9C%A1%EB%B2%95",
+  "lifelong": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%ED%8F%89%EC%83%9D%EA%B5%90%EC%9C%A1%EB%B2%95",
+  "special-edu": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%9E%A5%EC%95%A0%EC%9D%B8%EB%93%B1%EC%97%90%EB%8C%80%ED%95%9C%ED%8A%B9%EC%88%98%EA%B5%90%EC%9C%A1%EB%B2%95",
+  "teacher-status": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B5%90%EC%9B%90%EC%9D%98%EC%A7%80%EC%9C%84%ED%96%A5%EC%83%81%EB%B0%8F%EA%B5%90%EC%9C%A1%ED%99%9C%EB%8F%99%EB%B3%B4%ED%98%B8%EB%A5%BC%EC%9C%84%ED%95%9C%ED%8A%B9%EB%B3%84%EB%B2%95",
+  "local-edu": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%A7%80%EB%B0%A9%EA%B5%90%EC%9C%A1%EC%9E%90%EC%B9%98%EC%97%90%EA%B4%80%ED%95%9C%EB%B2%95%EB%A5%A0",
+  "edu-finance": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%A7%80%EB%B0%A9%EA%B5%90%EC%9C%A1%EC%9E%AC%EC%A0%95%EA%B5%90%EB%B6%80%EA%B8%88%EB%B2%95",
+  "private-school": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%82%AC%EB%A6%BD%ED%95%99%EA%B5%90%EB%B2%95",
+  "nec-law": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B5%AD%EA%B0%80%EA%B5%90%EC%9C%A1%EC%9C%84%EC%9B%90%ED%9A%8C%EC%84%A4%EC%B9%98%EB%B0%8F%EC%9A%B4%EC%98%81%EC%97%90%EA%B4%80%ED%95%9C%EB%B2%95%EB%A5%A0",
+  "ai-basic": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%9D%B8%EA%B3%B5%EC%A7%80%EB%8A%A5%EA%B8%B0%EB%B3%B8%EB%B2%95",
+  "data-basic": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EB%8D%B0%EC%9D%B4%ED%84%B0%EC%82%B0%EC%97%85%EC%A7%84%ED%9D%A5%EB%B0%8F%EC%9D%B4%EC%9A%A9%EC%B4%89%EC%A7%84%EC%97%90%EA%B4%80%ED%95%9C%EA%B8%B0%EB%B3%B8%EB%B2%95",
+  "intl-edu": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%9E%AC%EC%99%B8%EA%B5%AD%EB%AF%BC%EC%9D%98%EA%B5%90%EC%9C%A1%EC%A7%80%EC%9B%90%EB%93%B1%EC%97%90%EA%B4%80%ED%95%9C%EB%B2%95%EB%A5%A0",
+  "elem-decree": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%B4%88%C2%B7%EC%A4%91%EB%93%B1%EA%B5%90%EC%9C%A1%EB%B2%95%EC%8B%9C%ED%96%89%EB%A0%B9",
+  "higher-decree": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B3%A0%EB%93%B1%EA%B5%90%EC%9C%A1%EB%B2%95%EC%8B%9C%ED%96%89%EB%A0%B9",
+  "lifelong-decree": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%ED%8F%89%EC%83%9D%EA%B5%90%EC%9C%A1%EB%B2%95%EC%8B%9C%ED%96%89%EB%A0%B9",
+  "teacher-decree": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B5%90%EC%9B%90%EC%9D%98%EC%A7%80%EC%9C%84%ED%96%A5%EC%83%81%EB%B0%8F%EA%B5%90%EC%9C%A1%ED%99%9C%EB%8F%99%EB%B3%B4%ED%98%B8%EB%A5%BC%EC%9C%84%ED%95%9C%ED%8A%B9%EB%B3%84%EB%B2%95%EC%8B%9C%ED%96%89%EB%A0%B9",
+  "finance-decree": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%A7%80%EB%B0%A9%EA%B5%90%EC%9C%A1%EC%9E%AC%EC%A0%95%EA%B5%90%EB%B6%80%EA%B8%88%EB%B2%95%EC%8B%9C%ED%96%89%EB%A0%B9",
+  "elem-rule": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%B4%88%C2%B7%EC%A4%91%EB%93%B1%EA%B5%90%EC%9C%A1%EB%B2%95%EC%8B%9C%ED%96%89%EA%B7%9C%EC%B9%99",
+};
+
 // ── 3. 색상 팔레트 ──
 const TYPE_COLORS = {
   "constitution": "#dc2626",
@@ -398,29 +423,35 @@ export default function EducationLawOntologyApp() {
             <h1 style={{ fontSize: 22, fontWeight: 700, color: "#f1f5f9", margin: 0 }}>
               한국 교육법률 온톨로지 시각화 시스템
             </h1>
+            <span style={{ fontSize: 10, padding: "2px 8px", borderRadius: 4, background: "#dc262644", color: "#fca5a5", border: "1px solid #dc262666", marginLeft: 8, fontWeight: 500, whiteSpace: "nowrap" }}>
+              ⚠️ 비공식 연구용 사이트
+            </span>
           </div>
           <p style={{ fontSize: 13, color: "#94a3b8", margin: 0 }}>
-            국가교육발전계획 2028-2037 | MiroFish GraphRAG + Multi-Agent Simulation 아키텍처 기반
+            국가교육발전계획 2028-2037 | MiroFish GraphRAG + Multi-Agent Simulation 아키텍처 기반 · <span style={{ color: "#fbbf24" }}>본 사이트는 비공식 연구 목적으로 제작되었으며, 정부 공식 자료가 아닙니다.</span>
           </p>
 
           {/* Tab Navigation */}
           <div style={{ display: "flex", gap: 4, marginTop: 16 }}>
             {[
-              { id: "graph", label: "📊 법률 온톨로지 그래프" },
-              { id: "simulation", label: "🤖 멀티에이전트 시뮬레이션" },
-              { id: "matrix", label: "📋 법률-프로젝트 매핑" },
+              { id: "graph", label: "📊 법률 온톨로지 그래프", disabled: false },
+              { id: "simulation", label: "🤖 멀티에이전트 시뮬레이션", disabled: true },
+              { id: "matrix", label: "📋 법률-프로젝트 매핑", disabled: false },
             ].map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              <button key={tab.id} onClick={() => !tab.disabled && setActiveTab(tab.id)}
+                title={tab.disabled ? "준비 중입니다" : ""}
                 style={{
                   padding: "8px 16px", borderRadius: "8px 8px 0 0", border: "1px solid",
-                  borderColor: activeTab === tab.id ? "#6366f1" : "#334155",
+                  borderColor: tab.disabled ? "#1e293b" : (activeTab === tab.id ? "#6366f1" : "#334155"),
                   borderBottom: activeTab === tab.id ? "2px solid #6366f1" : "1px solid #334155",
-                  background: activeTab === tab.id ? "#1e293b" : "transparent",
-                  color: activeTab === tab.id ? "#a5b4fc" : "#64748b",
-                  cursor: "pointer", fontSize: 13, fontWeight: activeTab === tab.id ? 600 : 400,
+                  background: tab.disabled ? "transparent" : (activeTab === tab.id ? "#1e293b" : "transparent"),
+                  color: tab.disabled ? "#334155" : (activeTab === tab.id ? "#a5b4fc" : "#64748b"),
+                  cursor: tab.disabled ? "not-allowed" : "pointer", fontSize: 13,
+                  fontWeight: activeTab === tab.id ? 600 : 400,
+                  opacity: tab.disabled ? 0.5 : 1,
                   transition: "all 0.2s"
                 }}>
-                {tab.label}
+                {tab.label}{tab.disabled ? " (준비중)" : ""}
               </button>
             ))}
           </div>
@@ -763,7 +794,14 @@ export default function EducationLawOntologyApp() {
                   <tr key={node.id} style={{ background: i % 2 === 0 ? "transparent" : "#0f172a22" }}>
                     <td style={{ padding: "6px 10px", borderBottom: "1px solid #1e293b", color: "#e2e8f0", fontWeight: 500, position: "sticky", left: 0, background: i % 2 === 0 ? "#1e293b" : "#192035" }}>
                       <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: TYPE_COLORS[node.type], marginRight: 6, verticalAlign: "middle" }} />
-                      {node.label}
+                      {LAW_URLS[node.id] ? (
+                        <a href={LAW_URLS[node.id]} target="_blank" rel="noopener noreferrer"
+                          style={{ color: "#93c5fd", textDecoration: "none", borderBottom: "1px dotted #93c5fd55" }}
+                          onMouseOver={e => e.target.style.color = "#bfdbfe"}
+                          onMouseOut={e => e.target.style.color = "#93c5fd"}>
+                          {node.label} ↗
+                        </a>
+                      ) : node.label}
                     </td>
                     <td style={{ padding: "6px 4px", textAlign: "center", borderBottom: "1px solid #1e293b", color: TYPE_COLORS[node.type], fontSize: 9 }}>
                       {TYPE_LABELS[node.type]}
