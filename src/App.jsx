@@ -47,7 +47,8 @@ const ONTOLOGY_DATA = {
 
     // Level 4: 시행규칙/훈령
     { id: "elem-rule", label: "초·중등교육법 시행규칙", sublabel: "교육부령", level: 4, type: "rule", description: "교원자격검정, 학교생활기록부 관리 등", projectLink: ["03_교원정책"] },
-    { id: "curriculum-notice", label: "교육과정 고시", sublabel: "교육부 고시", level: 4, type: "rule", description: "국가 교육과정 기준 고시", projectLink: ["02_교육과정혁신"] },
+    { id: "curriculum-notice", label: "초·중등학교 교육과정", sublabel: "국가교육위원회 고시 제2026-1호", level: 4, type: "rule", description: "2022 개정 교육과정 (2026.1.21. 일부개정, 초5-6·중2·고2 적용)", projectLink: ["02_교육과정혁신", "01_AI디지털전략"] },
+    { id: "special-edu-notice", label: "특수교육 교육과정", sublabel: "국가교육위원회 고시 제2026-2호", level: 4, type: "rule", description: "특수교육 교육과정 (2026.1.21. 일부개정)", projectLink: ["08_교육복지_형평성"] },
     { id: "eval-notice", label: "학생평가 관련 훈령", sublabel: "교육부 훈령", level: 4, type: "rule", description: "학교생활기록 작성 및 관리지침", projectLink: ["04_평가선발체제"] },
 
     // Level 5: 지방조례
@@ -96,6 +97,11 @@ const ONTOLOGY_DATA = {
     { source: "elem-decree", target: "elem-rule", type: "시행", weight: 3 },
     { source: "elem-decree", target: "curriculum-notice", type: "고시", weight: 3 },
     { source: "elem-decree", target: "eval-notice", type: "훈령", weight: 3 },
+
+    // 국가교육위원회 → 교육과정 고시
+    { source: "nec-law", target: "curriculum-notice", type: "고시", weight: 4 },
+    { source: "nec-law", target: "special-edu-notice", type: "고시", weight: 4 },
+    { source: "special-edu", target: "special-edu-notice", type: "근거", weight: 3 },
 
     // 시행규칙 → 지방조례
     { source: "local-edu", target: "local-ord-1", type: "위임", weight: 2 },
@@ -158,6 +164,8 @@ const LAW_URLS = {
   "teacher-decree": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B5%90%EC%9B%90%EC%9D%98%EC%A7%80%EC%9C%84%ED%96%A5%EC%83%81%EB%B0%8F%EA%B5%90%EC%9C%A1%ED%99%9C%EB%8F%99%EB%B3%B4%ED%98%B8%EB%A5%BC%EC%9C%84%ED%95%9C%ED%8A%B9%EB%B3%84%EB%B2%95%EC%8B%9C%ED%96%89%EB%A0%B9",
   "finance-decree": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%A7%80%EB%B0%A9%EA%B5%90%EC%9C%A1%EC%9E%AC%EC%A0%95%EA%B5%90%EB%B6%80%EA%B8%88%EB%B2%95%EC%8B%9C%ED%96%89%EB%A0%B9",
   "elem-rule": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%B4%88%C2%B7%EC%A4%91%EB%93%B1%EA%B5%90%EC%9C%A1%EB%B2%95%EC%8B%9C%ED%96%89%EA%B7%9C%EC%B9%99",
+  "curriculum-notice": "https://www.law.go.kr/%ED%96%89%EC%A0%95%EA%B7%9C%EC%B9%99/%EC%B4%88%C2%B7%EC%A4%91%EB%93%B1%ED%95%99%EA%B5%90%20%EA%B5%90%EC%9C%A1%EA%B3%BC%EC%A0%95",
+  "special-edu-notice": "https://www.law.go.kr/%ED%96%89%EC%A0%95%EA%B7%9C%EC%B9%99/%ED%8A%B9%EC%88%98%EA%B5%90%EC%9C%A1%20%EA%B5%90%EC%9C%A1%EA%B3%BC%EC%A0%95",
   "digital-edu": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EB%94%94%EC%A7%80%ED%84%B8%20%EA%B8%B0%EB%B0%98%EC%9D%98%20%EC%9B%90%EA%B2%A9%EA%B5%90%EC%9C%A1%20%ED%99%9C%EC%84%B1%ED%99%94%20%EA%B8%B0%EB%B3%B8%EB%B2%95",
   "intl-coop": "https://www.law.go.kr/LSW/lsSc.do?menuId=1&subMenuId=15&tabMenuId=81&query=%EA%B5%AD%EC%A0%9C%EA%B0%9C%EB%B0%9C%ED%98%91%EB%A0%A5%EA%B8%B0%EB%B3%B8%EB%B2%95",
 };
