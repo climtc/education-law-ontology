@@ -1040,7 +1040,8 @@ export default function EducationLawOntologyApp() {
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
                 <thead>
                   <tr>
-                    <th style={{ padding: "8px 10px", textAlign: "left", borderBottom: "2px solid #334155", color: "#94a3b8", position: "sticky", left: 0, background: "#1e293b", minWidth: 160, zIndex: 2 }}>법률</th>
+                    <th style={{ padding: "8px 4px", textAlign: "center", borderBottom: "2px solid #334155", color: "#64748b", minWidth: 28, position: "sticky", left: 0, background: "#1e293b", zIndex: 2 }}>No.</th>
+                    <th style={{ padding: "8px 10px", textAlign: "left", borderBottom: "2px solid #334155", color: "#94a3b8", position: "sticky", left: 28, background: "#1e293b", minWidth: 160, zIndex: 2 }}>법률</th>
                     <th style={{ padding: "8px 4px", textAlign: "center", borderBottom: "2px solid #334155", color: "#94a3b8", minWidth: 30 }}>유형</th>
                     {ONTOLOGY_DATA.projectAreas.map(area => (
                       <th key={area.id} style={{ padding: "8px 4px", textAlign: "center", borderBottom: "2px solid #334155", color: area.color, fontSize: 10, minWidth: 60 }}>
@@ -1053,7 +1054,8 @@ export default function EducationLawOntologyApp() {
                 <tbody>
                   {ONTOLOGY_DATA.nodes.map((node, i) => (
                     <tr key={node.id} style={{ background: i % 2 === 0 ? "transparent" : "#0f172a22" }}>
-                      <td style={{ padding: "6px 10px", borderBottom: "1px solid #1e293b", color: "#e2e8f0", fontWeight: 500, position: "sticky", left: 0, background: i % 2 === 0 ? "#1e293b" : "#192035", zIndex: 1 }}>
+                      <td style={{ padding: "6px 4px", textAlign: "center", borderBottom: "1px solid #1e293b", color: "#64748b", fontSize: 11, position: "sticky", left: 0, background: i % 2 === 0 ? "#1e293b" : "#192035", zIndex: 1, minWidth: 28 }}>{i + 1}</td>
+                      <td style={{ padding: "6px 10px", borderBottom: "1px solid #1e293b", color: "#e2e8f0", fontWeight: 500, position: "sticky", left: 28, background: i % 2 === 0 ? "#1e293b" : "#192035", zIndex: 1 }}>
                         <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: TYPE_COLORS[node.type], marginRight: 6, verticalAlign: "middle" }} />
                         {LAW_URLS[node.id] ? (
                           <a href={LAW_URLS[node.id]} target="_blank" rel="noopener noreferrer"
