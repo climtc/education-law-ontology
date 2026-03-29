@@ -641,7 +641,7 @@ function useSimulation() {
 
 // ── 6. Main App Component ──
 export default function EducationLawOntologyApp() {
-  const [activeTab, setActiveTab] = useState("graph");
+  const [activeTab, setActiveTab] = useState("matrix");
   const [selectedNode, setSelectedNode] = useState(null);
   const [selectedArea, setSelectedArea] = useState(null);
   const [selectedScenario, setSelectedScenario] = useState(null);
@@ -684,9 +684,9 @@ export default function EducationLawOntologyApp() {
           {/* Tab Navigation */}
           <div style={{ display: "flex", gap: 4, marginTop: 16 }}>
             {[
-              { id: "graph", label: "📊 법률 온톨로지 그래프", disabled: false },
-              { id: "simulation", label: "🤖 멀티에이전트 시뮬레이션", disabled: true },
               { id: "matrix", label: "📋 법률-프로젝트 매핑", disabled: false },
+              { id: "simulation", label: "🤖 멀티에이전트 시뮬레이션", disabled: true },
+              { id: "graph", label: "📊 법률 온톨로지 그래프", disabled: true },
             ].map(tab => (
               <button key={tab.id} onClick={() => !tab.disabled && setActiveTab(tab.id)}
                 title={tab.disabled ? "준비 중입니다" : ""}
