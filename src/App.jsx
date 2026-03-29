@@ -7,103 +7,171 @@ import * as d3 from "d3";
 // ═══════════════════════════════════════════════════════════════
 
 // ── 1. 교육법률 온톨로지 데이터 모델 ──
+// 업데이트: 2026-03-29 | references/교육_법령_텍스트 기반 포괄적 확장
+// 27개 → 42개 법률 노드, 최신 법률번호·시행일 반영
 const ONTOLOGY_DATA = {
   nodes: [
-    // Level 0: 헌법
+    // ═══ Level 0: 헌법 ═══
     { id: "constitution", label: "대한민국 헌법", sublabel: "제31조 교육권", level: 0, type: "constitution", article: "제31조", description: "모든 국민은 능력에 따라 균등하게 교육을 받을 권리를 가진다", projectLink: ["all"] },
 
-    // Level 1: 기본법
-    { id: "edu-basic", label: "교육기본법", sublabel: "법률 제5437호", level: 1, type: "basic-law", article: "전문 29조", description: "교육에 관한 국민의 권리·의무 및 국가·지자체 책임", projectLink: ["all"] },
+    // ═══ Level 1: 기본법 ═══
+    { id: "edu-basic", label: "교육기본법", sublabel: "법률 제20663호 (2025.7.22. 시행)", level: 1, type: "basic-law", article: "전문 29조", description: "교육에 관한 국민의 권리·의무 및 국가·지자체 책임을 규정하는 교육 분야 최상위 기본법", projectLink: ["all"] },
 
-    // Level 2: 개별법 (교육단계별)
-    { id: "elementary", label: "초·중등교육법", sublabel: "법률 제5438호", level: 2, type: "individual-law", article: "전문 68조", description: "초등·중학·고등학교 교육에 관한 사항", projectLink: ["02_교육과정혁신", "03_교원정책", "04_평가선발체제"] },
-    { id: "higher-edu", label: "고등교육법", sublabel: "법률 제5439호", level: 2, type: "individual-law", article: "전문 65조", description: "대학·산업대·전문대 등 고등교육에 관한 사항", projectLink: ["02_교육과정혁신", "04_평가선발체제"] },
-    { id: "early-child", label: "유아교육법", sublabel: "법률 제7120호", level: 2, type: "individual-law", article: "전문 33조", description: "유아교육의 공공성 강화 및 질적 향상", projectLink: ["08_교육복지_형평성"] },
-    { id: "lifelong", label: "평생교육법", sublabel: "법률 제6400호", level: 2, type: "individual-law", article: "전문 47조", description: "평생교육 진흥에 관한 사항", projectLink: ["07_평생교육_직업교육"] },
-    { id: "special-edu", label: "특수교육법", sublabel: "장애인 등에 대한 특수교육법", level: 2, type: "individual-law", article: "전문 38조", description: "장애인 및 특별한 교육적 요구가 있는 사람의 교육", projectLink: ["08_교육복지_형평성"] },
+    // ═══ Level 2: 개별법 — 교육단계별 (초·중·고·대·평생·특수·유아) ═══
+    { id: "elementary", label: "초·중등교육법", sublabel: "법률 제21424호 (2026.9.11. 시행)", level: 2, type: "individual-law", article: "전문 68조", description: "초등·중학·고등학교 교육에 관한 사항. 2025년 스마트기기 사용 제한, 온라인학교 설립 근거, CCTV 설치 의무화 등 주요 개정", projectLink: ["02_교육과정혁신", "03_교원정책", "04_평가선발체제", "08_교육복지_형평성"] },
+    { id: "higher-edu", label: "고등교육법", sublabel: "법률 제20662호 (2026.3.1. 시행)", level: 2, type: "individual-law", article: "전문 65조", description: "대학·산업대·전문대 등 고등교육에 관한 사항. 고교학점제 연계 및 대학 자율화 확대", projectLink: ["02_교육과정혁신", "04_평가선발체제", "05_교육재정"] },
+    { id: "early-child", label: "유아교육법", sublabel: "법률 제21075호 (2026.2.12. 시행)", level: 2, type: "individual-law", article: "전문 33조", description: "유아교육의 공공성 강화 및 질적 향상. 유치원 교육과정 운영 및 설립 기준", projectLink: ["08_교육복지_형평성", "02_교육과정혁신"] },
+    { id: "lifelong", label: "평생교육법", sublabel: "법률 제21080호 (2026.5.12. 시행)", level: 2, type: "individual-law", article: "전문 47조", description: "평생교육 진흥에 관한 사항. 평생학습도시, 평생교육시설 설치·운영", projectLink: ["07_평생교육_직업교육"] },
+    { id: "special-edu", label: "특수교육법", sublabel: "법률 제21065호 (2025.10.1. 시행)", level: 2, type: "individual-law", article: "전문 38조", description: "장애인 등에 대한 특수교육법. 장애인 및 특별한 교육적 요구가 있는 사람의 교육 보장", projectLink: ["08_교육복지_형평성"] },
 
-    // Level 2: 개별법 (정책영역별)
+    // ═══ Level 2: 개별법 — 교원·인사 ═══
     { id: "teacher-status", label: "교원지위법", sublabel: "교원의 지위 향상 및 교육활동 보호를 위한 특별법", level: 2, type: "individual-law", article: "전문 19조", description: "교원 지위 향상, 처우 개선, 교육활동 보호", projectLink: ["03_교원정책"] },
-    { id: "local-edu", label: "지방교육자치법", sublabel: "법률 제5467호", level: 2, type: "individual-law", article: "전문 44조", description: "교육의 자주성·전문성·지방교육 특수성 보장", projectLink: ["06_교육거버넌스"] },
-    { id: "edu-finance", label: "지방교육재정교부금법", sublabel: "법률 제1963호", level: 2, type: "individual-law", article: "전문 11조", description: "지방자치단체 교육재정 교부금 관련 사항", projectLink: ["05_교육재정"] },
-    { id: "private-school", label: "사립학교법", sublabel: "법률 제1362호", level: 2, type: "individual-law", article: "전문 73조", description: "사립학교의 특수성에 비추어 자주성 확보", projectLink: ["06_교육거버넌스"] },
-    { id: "nec-law", label: "국가교육위원회법", sublabel: "법률 제18298호", level: 2, type: "individual-law", article: "전문 21조", description: "중장기 교육정책 수립 및 국가교육과정 심의", projectLink: ["06_교육거버넌스"] },
+    { id: "edu-civil-servant", label: "교육공무원법", sublabel: "법률 제20569호 (2024.12.20. 시행)", level: 2, type: "individual-law", article: "전문 63조", description: "교육공무원의 자격·임용·보수·연수·신분보장 등에 관한 사항", projectLink: ["03_교원정책", "06_교육거버넌스"] },
 
-    // Level 2: AI/디지털 관련법
-    { id: "ai-basic", label: "인공지능기본법", sublabel: "법률 제20890호", level: 2, type: "tech-law", article: "전문 50조", description: "인공지능 기술 발전과 산업 진흥", projectLink: ["01_AI디지털전략"] },
-    { id: "digital-edu", label: "디지털교육진흥법", sublabel: "제정 추진 중", level: 2, type: "tech-law", article: "제정안", description: "디지털 기반 교육 혁신을 위한 법적 기반", projectLink: ["01_AI디지털전략"] },
-    { id: "data-basic", label: "데이터기본법", sublabel: "법률 제18475호", level: 2, type: "tech-law", article: "전문 33조", description: "데이터의 생산·활용 촉진과 데이터산업 발전", projectLink: ["01_AI디지털전략"] },
+    // ═══ Level 2: 개별법 — 거버넌스·행정 ═══
+    { id: "nec-law", label: "국가교육위원회법", sublabel: "법률 제18298호 (2022.7.21. 시행)", level: 2, type: "individual-law", article: "전문 21조", description: "국가교육위원회 설치·운영. 대통령 소속 21인 위원회로 중장기 국가교육발전계획 수립, 국가교육과정 심의·의결, 교육정책 국민의견 수렴·조정", projectLink: ["06_교육거버넌스", "02_교육과정혁신"] },
+    { id: "local-edu", label: "지방교육자치법", sublabel: "법률 제21487호 (2026.3.19. 시행)", level: 2, type: "individual-law", article: "전문 44조", description: "교육의 자주성·전문성·지방교육 특수성 보장. 교육감 선출 및 교육자치 운영", projectLink: ["06_교육거버넌스"] },
+    { id: "private-school", label: "사립학교법", sublabel: "법률 제21073호 (2026.5.12. 시행)", level: 2, type: "individual-law", article: "전문 73조", description: "사립학교의 특수성에 비추어 자주성 확보 및 공공성 강화", projectLink: ["06_교육거버넌스"] },
 
-    // Level 2: 국제/글로벌 관련
-    { id: "intl-edu", label: "재외국민교육지원법", sublabel: "법률 제8852호", level: 2, type: "individual-law", article: "전문 22조", description: "재외국민 자녀 교육 지원", projectLink: ["09_글로벌교육협력"] },
-    { id: "intl-coop", label: "국제교육협력법", sublabel: "법률 추진 중", level: 2, type: "individual-law", article: "제정안", description: "국제 교육 교류 및 협력 활성화", projectLink: ["09_글로벌교육협력"] },
+    // ═══ Level 2: 개별법 — 교육재정 ═══
+    { id: "edu-finance", label: "지방교육재정교부금법", sublabel: "법률 제21228호 (2026.1.1. 시행)", level: 2, type: "individual-law", article: "전문 11조", description: "지방자치단체 교육재정 교부금의 종류·산정기준·배분", projectLink: ["05_교육재정"] },
+    { id: "higher-lifelong-fund", label: "고등·평생교육지원특별회계법", sublabel: "법률 제21227호 (2025.12.23. 시행)", level: 2, type: "individual-law", article: "전문", description: "고등교육 및 평생교육 재정 지원을 위한 특별회계 설치·운영", projectLink: ["05_교육재정", "07_평생교육_직업교육"] },
 
-    // Level 3: 시행령
-    { id: "elem-decree", label: "초·중등교육법 시행령", sublabel: "대통령령", level: 3, type: "decree", description: "교육과정 편성·운영, 학교 설립 기준 등 세부사항", projectLink: ["02_교육과정혁신"] },
+    // ═══ Level 2: 개별법 — 학생복지·안전 ═══
+    { id: "school-violence", label: "학교폭력예방법", sublabel: "법률 제21082호 (2025.11.11. 시행)", level: 2, type: "individual-law", article: "학교폭력예방 및 대책에 관한 법률", description: "학교폭력 예방 및 피해학생 보호, 가해학생 선도·교육, 학교폭력대책심의위원회 운영", projectLink: ["08_교육복지_형평성", "06_교육거버넌스"] },
+    { id: "school-safety", label: "학교안전법", sublabel: "법률 제21149호 (2025.12.2. 시행)", level: 2, type: "individual-law", article: "학교안전사고 예방 및 보상에 관한 법률", description: "학교안전사고 예방 및 보상. 학교안전공제회 설치·운영", projectLink: ["08_교육복지_형평성"] },
+    { id: "school-meal", label: "학교급식법", sublabel: "법률 제18639호 (2022.6.29. 시행)", level: 2, type: "individual-law", article: "전문 20조", description: "학교급식의 질 향상 및 학생 건강 증진을 위한 급식 운영", projectLink: ["08_교육복지_형평성", "05_교육재정"] },
+    { id: "school-health", label: "학교보건법", sublabel: "법률 제21065호 (2025.10.1. 시행)", level: 2, type: "individual-law", article: "전문 20조", description: "학생 및 교직원의 건강보호·증진. 학교환경위생정화 및 보건교육", projectLink: ["08_교육복지_형평성"] },
+
+    // ═══ Level 2: 개별법 — 교육과정·평가 관련 ═══
+    { id: "public-edu-norm", label: "공교육정상화법", sublabel: "법률 제20722호 (2025.1.31. 시행)", level: 2, type: "individual-law", article: "공교육 정상화 촉진 및 선행교육 규제에 관한 특별법", description: "선행교육 규제 및 선행학습 유발 행위 금지. 공교육 정상화 촉진", projectLink: ["02_교육과정혁신", "04_평가선발체제"] },
+    { id: "gifted-edu", label: "영재교육 진흥법", sublabel: "법률 제21065호 (2025.10.1. 시행)", level: 2, type: "individual-law", article: "전문 30조", description: "영재교육의 진흥에 필요한 사항. 영재교육원·영재학교 설치·운영", projectLink: ["02_교육과정혁신", "04_평가선발체제"] },
+    { id: "school-sports", label: "학교체육 진흥법", sublabel: "법률 제20569호 (2024.12.20. 시행)", level: 2, type: "individual-law", article: "전문 22조", description: "학교체육 활성화에 필요한 사항. 학교스포츠클럽, 체육수업 확대", projectLink: ["02_교육과정혁신", "08_교육복지_형평성"] },
+    { id: "credit-recognition", label: "학점인정법", sublabel: "법률 제19588호 (2024.5.17. 시행)", level: 2, type: "individual-law", article: "학점인정 등에 관한 법률", description: "학점은행제 운영. 평가인정 학습과정, 학점인정 기준", projectLink: ["07_평생교육_직업교육", "04_평가선발체제"] },
+
+    // ═══ Level 2: 개별법 — 직업교육·산학협력 ═══
+    { id: "industry-edu", label: "산학협력법", sublabel: "법률 제20563호 (2025.6.21. 시행)", level: 2, type: "individual-law", article: "산업교육진흥 및 산학연협력촉진에 관한 법률", description: "산업교육 진흥과 산학연 협력을 통한 인력 양성", projectLink: ["07_평생교육_직업교육", "02_교육과정혁신"] },
+
+    // ═══ Level 2: 개별법 — AI/디지털 관련법 ═══
+    { id: "ai-basic", label: "인공지능기본법", sublabel: "법률 제20676호 (2026.1.22. 시행)", level: 2, type: "tech-law", article: "인공지능 발전과 신뢰 기반 조성 등에 관한 기본법", description: "AI 기술 발전과 신뢰 기반 조성. 교육 분야를 '고영향 AI' 영역으로 지정하여 학생평가 AI 등에 대한 엄격한 규제 적용", projectLink: ["01_AI디지털전략"] },
+    { id: "digital-remote-edu", label: "원격교육활성화법", sublabel: "법률 제18786호 (2022.3.25. 시행)", level: 2, type: "tech-law", article: "디지털 기반의 원격교육 활성화 기본법", description: "디지털 기반 원격교육 활성화를 위한 법적 기반. ICT를 활용한 교육혁신 인프라 구축", projectLink: ["01_AI디지털전략", "02_교육과정혁신"] },
+    { id: "data-basic", label: "데이터기본법", sublabel: "법률 제18475호 (2022.4.20. 시행)", level: 2, type: "tech-law", article: "전문 33조", description: "데이터 생산·수집·활용 촉진과 데이터산업 발전 기반 조성", projectLink: ["01_AI디지털전략"] },
+    { id: "sci-math-info", label: "과학·수학·정보교육법", sublabel: "법률 제14903호 (2018.4.25. 시행)", level: 2, type: "tech-law", article: "과학·수학·정보 교육 진흥법", description: "과학·수학·정보 교육 진흥에 필요한 사항. SW·AI 교육 기반", projectLink: ["01_AI디지털전략", "02_교육과정혁신"] },
+
+    // ═══ Level 2: 개별법 — 교육환경·시설 ═══
+    { id: "edu-facility", label: "교육시설법", sublabel: "법률 제20181호 (2025.2.7. 시행)", level: 2, type: "individual-law", article: "교육시설 등의 안전 및 유지관리 등에 관한 법률", description: "교육시설의 안전 확보 및 유지관리 기준", projectLink: ["05_교육재정", "08_교육복지_형평성"] },
+    { id: "edu-environment", label: "교육환경보호법", sublabel: "법률 제21009호 (2026.2.15. 시행)", level: 2, type: "individual-law", article: "교육환경 보호에 관한 법률", description: "학교 주변 교육환경 보호 및 교육환경보호구역 설정·관리", projectLink: ["08_교육복지_형평성"] },
+
+    // ═══ Level 2: 개별법 — 국제/글로벌 ═══
+    { id: "intl-edu", label: "재외국민교육지원법", sublabel: "법률 제21013호 (2025.8.14. 시행)", level: 2, type: "individual-law", article: "전문 22조", description: "재외국민 자녀의 교육 지원 및 한국교육원 설치·운영", projectLink: ["09_글로벌교육협력"] },
+    { id: "edu-intl-special", label: "교육국제화특구법", sublabel: "법률 제17954호 (2021.3.23. 시행)", level: 2, type: "individual-law", article: "교육국제화특구의 지정·운영 및 육성에 관한 특별법", description: "교육국제화특구 지정·운영을 통한 국제교육 활성화", projectLink: ["09_글로벌교육협력"] },
+    { id: "foreign-edu-inst", label: "외국교육기관법", sublabel: "법률 제17954호 (2021.3.23. 시행)", level: 2, type: "individual-law", article: "경제자유구역 및 제주국제자유도시의 외국교육기관 설립·운영에 관한 특별법", description: "경제자유구역 등에서의 외국 교육기관 설립·운영 허용", projectLink: ["09_글로벌교육협력"] },
+
+    // ═══ Level 2: 개별법 — 장학·지원 ═══
+    { id: "scholarship", label: "한국장학재단법", sublabel: "법률 제21065호 (2026.1.2. 시행)", level: 2, type: "individual-law", article: "한국장학재단 설립 등에 관한 법률", description: "한국장학재단 설립·운영, 학자금 대출·장학금 지원", projectLink: ["05_교육재정", "08_교육복지_형평성"] },
+
+    // ═══ Level 3: 시행령 ═══
+    { id: "elem-decree", label: "초·중등교육법 시행령", sublabel: "대통령령", level: 3, type: "decree", description: "교육과정 편성·운영, 학교 설립 기준, 학생 배치 등 세부사항", projectLink: ["02_교육과정혁신"] },
     { id: "higher-decree", label: "고등교육법 시행령", sublabel: "대통령령", level: 3, type: "decree", description: "대학 설립·운영, 입학전형 기준 등 세부사항", projectLink: ["04_평가선발체제"] },
     { id: "lifelong-decree", label: "평생교육법 시행령", sublabel: "대통령령", level: 3, type: "decree", description: "평생교육시설, 학점은행제 운영 등 세부사항", projectLink: ["07_평생교육_직업교육"] },
     { id: "teacher-decree", label: "교원지위법 시행령", sublabel: "대통령령", level: 3, type: "decree", description: "교원 보수, 근무조건, 보호조치 등 세부사항", projectLink: ["03_교원정책"] },
     { id: "finance-decree", label: "지방교육재정교부금법 시행령", sublabel: "대통령령", level: 3, type: "decree", description: "교부금 산정기준, 배분방식 등 세부사항", projectLink: ["05_교육재정"] },
+    { id: "nec-decree", label: "국가교육위원회법 시행령", sublabel: "대통령령 제32627호 (2022.7.21. 시행)", level: 3, type: "decree", description: "위원 자격요건, 소위원회 운영, 사무처 조직 등 세부사항", projectLink: ["06_교육거버넌스"] },
+    { id: "school-setup-rule", label: "학교 설립·운영 규정", sublabel: "고등학교 이하 각급 학교 설립·운영 규정", level: 3, type: "decree", description: "학교 설립에 필요한 시설·설비·교원 등의 기준", projectLink: ["05_교육재정", "06_교육거버넌스"] },
 
-    // Level 4: 시행규칙/훈령
+    // ═══ Level 4: 시행규칙/고시/훈령 ═══
     { id: "elem-rule", label: "초·중등교육법 시행규칙", sublabel: "교육부령", level: 4, type: "rule", description: "교원자격검정, 학교생활기록부 관리 등", projectLink: ["03_교원정책"] },
-    { id: "curriculum-notice", label: "초·중등학교 교육과정", sublabel: "국가교육위원회 고시 제2026-1호", level: 4, type: "rule", description: "2022 개정 교육과정 (2026.1.21. 일부개정, 초5-6·중2·고2 적용)", projectLink: ["02_교육과정혁신", "01_AI디지털전략"] },
+    { id: "curriculum-notice", label: "초·중등학교 교육과정", sublabel: "국가교육위원회 고시 제2026-1호", level: 4, type: "rule", description: "2022 개정 교육과정 (2026.3. 기준: 초5-6·중2·고2 단계 적용, AI 디지털 교과서 확대)", projectLink: ["02_교육과정혁신", "01_AI디지털전략"] },
     { id: "special-edu-notice", label: "특수교육 교육과정", sublabel: "국가교육위원회 고시 제2026-2호", level: 4, type: "rule", description: "특수교육 교육과정 (2026.1.21. 일부개정)", projectLink: ["08_교육복지_형평성"] },
     { id: "eval-notice", label: "학생평가 관련 훈령", sublabel: "교육부 훈령", level: 4, type: "rule", description: "학교생활기록 작성 및 관리지침", projectLink: ["04_평가선발체제"] },
+    { id: "textbook-rule", label: "교과용 도서에 관한 규정", sublabel: "대통령령", level: 4, type: "rule", description: "교과서·지도서의 저작·검정·인정·발행·공급 등에 관한 사항", projectLink: ["02_교육과정혁신", "01_AI디지털전략"] },
 
-    // Level 5: 지방조례
-    { id: "local-ord-1", label: "서울특별시 교육청 조례", sublabel: "지방자치단체 조례", level: 5, type: "ordinance", description: "학생인권조례, 교육환경보호조례 등", projectLink: ["06_교육거버넌스", "08_교육복지_형평성"] },
-    { id: "local-ord-2", label: "시·도교육청 교육과정 편성지침", sublabel: "지방교육자치단체 규칙", level: 5, type: "ordinance", description: "지역별 교육과정 편성 세부기준", projectLink: ["02_교육과정혁신", "06_교육거버넌스"] },
+    // ═══ Level 5: 지방조례 ═══
+    { id: "local-ord-1", label: "시·도 교육청 조례", sublabel: "지방자치단체 조례", level: 5, type: "ordinance", description: "학생인권조례, 교육환경보호조례, 학교급식조례 등 시·도교육청별 자치법규", projectLink: ["06_교육거버넌스", "08_교육복지_형평성"] },
+    { id: "local-ord-2", label: "시·도교육청 교육과정 편성지침", sublabel: "지방교육자치단체 규칙", level: 5, type: "ordinance", description: "지역별 교육과정 편성 세부기준 (국가교육과정 → 시·도 편성지침 → 학교 교육과정)", projectLink: ["02_교육과정혁신", "06_교육거버넌스"] },
   ],
 
   edges: [
-    // 헌법 → 기본법
+    // ═══ 헌법 → 기본법 ═══
     { source: "constitution", target: "edu-basic", type: "근거", weight: 5 },
 
-    // 기본법 → 개별법
+    // ═══ 기본법 → 교육단계별 개별법 ═══
     { source: "edu-basic", target: "elementary", type: "위임", weight: 4 },
     { source: "edu-basic", target: "higher-edu", type: "위임", weight: 4 },
     { source: "edu-basic", target: "early-child", type: "위임", weight: 4 },
     { source: "edu-basic", target: "lifelong", type: "위임", weight: 4 },
     { source: "edu-basic", target: "special-edu", type: "위임", weight: 4 },
+
+    // ═══ 기본법 → 정책영역별 개별법 ═══
     { source: "edu-basic", target: "teacher-status", type: "위임", weight: 4 },
+    { source: "edu-basic", target: "edu-civil-servant", type: "위임", weight: 3 },
     { source: "edu-basic", target: "local-edu", type: "위임", weight: 4 },
     { source: "edu-basic", target: "edu-finance", type: "위임", weight: 4 },
     { source: "edu-basic", target: "private-school", type: "위임", weight: 3 },
     { source: "edu-basic", target: "nec-law", type: "위임", weight: 4 },
-    { source: "edu-basic", target: "ai-basic", type: "관련", weight: 2 },
     { source: "edu-basic", target: "intl-edu", type: "위임", weight: 3 },
+    { source: "edu-basic", target: "ai-basic", type: "관련", weight: 2 },
 
-    // 개별법 간 상호참조
+    // ═══ 국가교육위원회법 중심 관계 (거버넌스 허브) ═══
+    { source: "nec-law", target: "curriculum-notice", type: "고시", weight: 5 },
+    { source: "nec-law", target: "special-edu-notice", type: "고시", weight: 4 },
+    { source: "nec-law", target: "local-edu", type: "참조", weight: 3 },
+    { source: "nec-law", target: "nec-decree", type: "시행", weight: 4 },
+    { source: "nec-law", target: "edu-finance", type: "참조", weight: 2 },
+
+    // ═══ 교육단계별 개별법 간 상호참조 ═══
     { source: "elementary", target: "teacher-status", type: "참조", weight: 3 },
+    { source: "elementary", target: "edu-civil-servant", type: "참조", weight: 3 },
     { source: "elementary", target: "local-edu", type: "참조", weight: 3 },
-    { source: "higher-edu", target: "lifelong", type: "참조", weight: 2 },
     { source: "elementary", target: "special-edu", type: "참조", weight: 3 },
-    { source: "ai-basic", target: "digital-edu", type: "관련", weight: 3 },
-    { source: "ai-basic", target: "data-basic", type: "관련", weight: 3 },
     { source: "elementary", target: "edu-finance", type: "참조", weight: 2 },
+    { source: "elementary", target: "school-violence", type: "참조", weight: 3 },
+    { source: "elementary", target: "school-safety", type: "참조", weight: 2 },
+    { source: "elementary", target: "public-edu-norm", type: "참조", weight: 3 },
+    { source: "elementary", target: "school-meal", type: "참조", weight: 2 },
+    { source: "elementary", target: "school-health", type: "참조", weight: 2 },
+    { source: "elementary", target: "school-sports", type: "참조", weight: 2 },
+    { source: "higher-edu", target: "lifelong", type: "참조", weight: 2 },
     { source: "higher-edu", target: "edu-finance", type: "참조", weight: 2 },
-    { source: "nec-law", target: "local-edu", type: "참조", weight: 2 },
-    { source: "intl-edu", target: "intl-coop", type: "관련", weight: 3 },
+    { source: "higher-edu", target: "industry-edu", type: "참조", weight: 3 },
+    { source: "higher-edu", target: "credit-recognition", type: "참조", weight: 3 },
+    { source: "higher-edu", target: "scholarship", type: "참조", weight: 3 },
+    { source: "higher-edu", target: "higher-lifelong-fund", type: "참조", weight: 3 },
+    { source: "lifelong", target: "credit-recognition", type: "참조", weight: 4 },
+    { source: "lifelong", target: "higher-lifelong-fund", type: "참조", weight: 3 },
+    { source: "special-edu", target: "special-edu-notice", type: "근거", weight: 3 },
+    { source: "teacher-status", target: "edu-civil-servant", type: "참조", weight: 4 },
 
-    // 개별법 → 시행령
+    // ═══ AI/디지털 관련법 상호관계 ═══
+    { source: "ai-basic", target: "digital-remote-edu", type: "관련", weight: 3 },
+    { source: "ai-basic", target: "data-basic", type: "관련", weight: 3 },
+    { source: "ai-basic", target: "sci-math-info", type: "관련", weight: 2 },
+    { source: "digital-remote-edu", target: "sci-math-info", type: "참조", weight: 2 },
+
+    // ═══ 국제/글로벌 관련 ═══
+    { source: "intl-edu", target: "edu-intl-special", type: "관련", weight: 3 },
+    { source: "intl-edu", target: "foreign-edu-inst", type: "관련", weight: 2 },
+    { source: "edu-intl-special", target: "foreign-edu-inst", type: "참조", weight: 2 },
+
+    // ═══ 재정 관련 ═══
+    { source: "edu-finance", target: "higher-lifelong-fund", type: "관련", weight: 3 },
+    { source: "edu-finance", target: "scholarship", type: "관련", weight: 2 },
+
+    // ═══ 개별법 → 시행령 ═══
     { source: "elementary", target: "elem-decree", type: "시행", weight: 4 },
     { source: "higher-edu", target: "higher-decree", type: "시행", weight: 4 },
     { source: "lifelong", target: "lifelong-decree", type: "시행", weight: 4 },
     { source: "teacher-status", target: "teacher-decree", type: "시행", weight: 4 },
     { source: "edu-finance", target: "finance-decree", type: "시행", weight: 4 },
+    { source: "elementary", target: "school-setup-rule", type: "시행", weight: 3 },
 
-    // 시행령 → 시행규칙/훈령
+    // ═══ 시행령 → 시행규칙/고시/훈령 ═══
     { source: "elem-decree", target: "elem-rule", type: "시행", weight: 3 },
     { source: "elem-decree", target: "curriculum-notice", type: "고시", weight: 3 },
     { source: "elem-decree", target: "eval-notice", type: "훈령", weight: 3 },
+    { source: "elem-decree", target: "textbook-rule", type: "시행", weight: 3 },
 
-    // 국가교육위원회 → 교육과정 고시
-    { source: "nec-law", target: "curriculum-notice", type: "고시", weight: 4 },
-    { source: "nec-law", target: "special-edu-notice", type: "고시", weight: 4 },
-    { source: "special-edu", target: "special-edu-notice", type: "근거", weight: 3 },
-
-    // 시행규칙 → 지방조례
+    // ═══ 시행규칙/고시 → 지방조례 ═══
     { source: "local-edu", target: "local-ord-1", type: "위임", weight: 2 },
     { source: "curriculum-notice", target: "local-ord-2", type: "위임", weight: 2 },
   ],
@@ -133,15 +201,16 @@ const AGENTS = [
 ];
 
 const POLICY_SCENARIOS = [
-  { id: "ai-curriculum", label: "AI 교육과정 필수화", description: "초등학교부터 AI·코딩 교육을 필수 교과로 편성", laws: ["elementary", "curriculum-notice", "ai-basic", "digital-edu"], area: "01_AI디지털전략" },
-  { id: "teacher-ai", label: "교원 AI 역량 강화", description: "모든 교원에게 AI 활용 연수 의무화 및 인센티브 도입", laws: ["teacher-status", "teacher-decree", "ai-basic"], area: "03_교원정책" },
-  { id: "eval-reform", label: "대입제도 개편", description: "AI 기반 역량평가 도입 및 수능 비중 축소", laws: ["higher-edu", "higher-decree", "eval-notice", "elementary"], area: "04_평가선발체제" },
-  { id: "lifelong-credit", label: "평생학습 학점 인정 확대", description: "온라인 학습·직업훈련 학점 인정 범위 확대", laws: ["lifelong", "lifelong-decree", "higher-edu"], area: "07_평생교육_직업교육" },
-  { id: "edu-budget", label: "교육재정 배분 재구조화", description: "AI·디지털 교육 투자 비중 확대 및 학교 자율예산 도입", laws: ["edu-finance", "finance-decree", "local-edu"], area: "05_교육재정" },
-  { id: "governance", label: "교육자치 확대", description: "학교 단위 자율권 강화 및 국가교육위원회 역할 확대", laws: ["nec-law", "local-edu", "local-ord-1"], area: "06_교육거버넌스" },
+  { id: "ai-curriculum", label: "AI 교육과정 필수화", description: "초등학교부터 AI·코딩 교육을 필수 교과로 편성하고 디지털 교과서 도입 확대", laws: ["elementary", "curriculum-notice", "ai-basic", "digital-remote-edu", "sci-math-info", "textbook-rule"], area: "01_AI디지털전략" },
+  { id: "teacher-ai", label: "교원 AI 역량 강화", description: "모든 교원에게 AI 활용 연수 의무화 및 교육공무원 연수체계 개편", laws: ["teacher-status", "teacher-decree", "edu-civil-servant", "ai-basic"], area: "03_교원정책" },
+  { id: "eval-reform", label: "대입제도 개편", description: "고교학점제 연계 및 AI 기반 역량평가 도입, 수능 비중 축소", laws: ["higher-edu", "higher-decree", "eval-notice", "elementary", "public-edu-norm", "gifted-edu"], area: "04_평가선발체제" },
+  { id: "lifelong-credit", label: "평생학습 학점 인정 확대", description: "온라인 학습·직업훈련 학점 인정 범위 확대 및 학점은행제 고도화", laws: ["lifelong", "lifelong-decree", "credit-recognition", "higher-edu", "industry-edu"], area: "07_평생교육_직업교육" },
+  { id: "edu-budget", label: "교육재정 배분 재구조화", description: "AI·디지털 교육 투자 확대, 고등·평생교육 특별회계 활용, 학교 자율예산 도입", laws: ["edu-finance", "finance-decree", "higher-lifelong-fund", "local-edu", "scholarship"], area: "05_교육재정" },
+  { id: "governance", label: "국가교육위원회 역할 확대", description: "중장기 국가교육발전계획 수립 및 교육자치 확대, 학교 단위 자율권 강화", laws: ["nec-law", "nec-decree", "local-edu", "local-ord-1", "edu-civil-servant"], area: "06_교육거버넌스" },
 ];
 
 // ── 2-1. 법률 URL 매핑 (법제처 국가법령정보센터) ──
+// 업데이트: 2026-03-29
 const LAW_URLS = {
   "constitution": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EB%8C%80%ED%95%9C%EB%AF%BC%EA%B5%AD%ED%97%8C%EB%B2%95",
   "edu-basic": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B5%90%EC%9C%A1%EA%B8%B0%EB%B3%B8%EB%B2%95",
@@ -151,23 +220,41 @@ const LAW_URLS = {
   "lifelong": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%ED%8F%89%EC%83%9D%EA%B5%90%EC%9C%A1%EB%B2%95",
   "special-edu": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%9E%A5%EC%95%A0%EC%9D%B8%EB%93%B1%EC%97%90%EB%8C%80%ED%95%9C%ED%8A%B9%EC%88%98%EA%B5%90%EC%9C%A1%EB%B2%95",
   "teacher-status": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B5%90%EC%9B%90%EC%9D%98%EC%A7%80%EC%9C%84%ED%96%A5%EC%83%81%EB%B0%8F%EA%B5%90%EC%9C%A1%ED%99%9C%EB%8F%99%EB%B3%B4%ED%98%B8%EB%A5%BC%EC%9C%84%ED%95%9C%ED%8A%B9%EB%B3%84%EB%B2%95",
+  "edu-civil-servant": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B5%90%EC%9C%A1%EA%B3%B5%EB%AC%B4%EC%9B%90%EB%B2%95",
   "local-edu": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%A7%80%EB%B0%A9%EA%B5%90%EC%9C%A1%EC%9E%90%EC%B9%98%EC%97%90%EA%B4%80%ED%95%9C%EB%B2%95%EB%A5%A0",
   "edu-finance": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%A7%80%EB%B0%A9%EA%B5%90%EC%9C%A1%EC%9E%AC%EC%A0%95%EA%B5%90%EB%B6%80%EA%B8%88%EB%B2%95",
+  "higher-lifelong-fund": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B3%A0%EB%93%B1%C2%B7%ED%8F%89%EC%83%9D%EA%B5%90%EC%9C%A1%EC%A7%80%EC%9B%90%ED%8A%B9%EB%B3%84%ED%9A%8C%EA%B3%84%EB%B2%95",
   "private-school": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%82%AC%EB%A6%BD%ED%95%99%EA%B5%90%EB%B2%95",
   "nec-law": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B5%AD%EA%B0%80%EA%B5%90%EC%9C%A1%EC%9C%84%EC%9B%90%ED%9A%8C%EC%84%A4%EC%B9%98%EB%B0%8F%EC%9A%B4%EC%98%81%EC%97%90%EA%B4%80%ED%95%9C%EB%B2%95%EB%A5%A0",
-  "ai-basic": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%9D%B8%EA%B3%B5%EC%A7%80%EB%8A%A5%EA%B8%B0%EB%B3%B8%EB%B2%95",
+  "ai-basic": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%9D%B8%EA%B3%B5%EC%A7%80%EB%8A%A5%20%EB%B0%9C%EC%A0%84%EA%B3%BC%20%EC%8B%A0%EB%A2%B0%20%EA%B8%B0%EB%B0%98%20%EC%A1%B0%EC%84%B1%20%EB%93%B1%EC%97%90%20%EA%B4%80%ED%95%9C%20%EA%B8%B0%EB%B3%B8%EB%B2%95",
+  "digital-remote-edu": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EB%94%94%EC%A7%80%ED%84%B8%20%EA%B8%B0%EB%B0%98%EC%9D%98%20%EC%9B%90%EA%B2%A9%EA%B5%90%EC%9C%A1%20%ED%99%9C%EC%84%B1%ED%99%94%20%EA%B8%B0%EB%B3%B8%EB%B2%95",
   "data-basic": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EB%8D%B0%EC%9D%B4%ED%84%B0%EC%82%B0%EC%97%85%EC%A7%84%ED%9D%A5%EB%B0%8F%EC%9D%B4%EC%9A%A9%EC%B4%89%EC%A7%84%EC%97%90%EA%B4%80%ED%95%9C%EA%B8%B0%EB%B3%B8%EB%B2%95",
+  "sci-math-info": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B3%BC%ED%95%99%C2%B7%EC%88%98%ED%95%99%C2%B7%EC%A0%95%EB%B3%B4%20%EA%B5%90%EC%9C%A1%20%EC%A7%84%ED%9D%A5%EB%B2%95",
+  "school-violence": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%ED%95%99%EA%B5%90%ED%8F%AD%EB%A0%A5%EC%98%88%EB%B0%A9%EB%B0%8F%EB%8C%80%EC%B1%85%EC%97%90%EA%B4%80%ED%95%9C%EB%B2%95%EB%A5%A0",
+  "school-safety": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%ED%95%99%EA%B5%90%EC%95%88%EC%A0%84%EC%82%AC%EA%B3%A0%EC%98%88%EB%B0%A9%EB%B0%8F%EB%B3%B4%EC%83%81%EC%97%90%EA%B4%80%ED%95%9C%EB%B2%95%EB%A5%A0",
+  "school-meal": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%ED%95%99%EA%B5%90%EA%B8%89%EC%8B%9D%EB%B2%95",
+  "school-health": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%ED%95%99%EA%B5%90%EB%B3%B4%EA%B1%B4%EB%B2%95",
+  "school-sports": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%ED%95%99%EA%B5%90%EC%B2%B4%EC%9C%A1%20%EC%A7%84%ED%9D%A5%EB%B2%95",
+  "public-edu-norm": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B3%B5%EA%B5%90%EC%9C%A1%EC%A0%95%EC%83%81%ED%99%94%EC%B4%89%EC%A7%84%EB%B0%8F%EC%84%A0%ED%96%89%EA%B5%90%EC%9C%A1%EA%B7%9C%EC%A0%9C%EC%97%90%EA%B4%80%ED%95%9C%ED%8A%B9%EB%B3%84%EB%B2%95",
+  "gifted-edu": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%98%81%EC%9E%AC%EA%B5%90%EC%9C%A1%20%EC%A7%84%ED%9D%A5%EB%B2%95",
+  "credit-recognition": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%ED%95%99%EC%A0%90%EC%9D%B8%EC%A0%95%EB%93%B1%EC%97%90%EA%B4%80%ED%95%9C%EB%B2%95%EB%A5%A0",
+  "industry-edu": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%82%B0%EC%97%85%EA%B5%90%EC%9C%A1%EC%A7%84%ED%9D%A5%EB%B0%8F%EC%82%B0%ED%95%99%EC%97%B0%ED%98%91%EB%A0%A5%EC%B4%89%EC%A7%84%EC%97%90%EA%B4%80%ED%95%9C%EB%B2%95%EB%A5%A0",
+  "scholarship": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%ED%95%9C%EA%B5%AD%EC%9E%A5%ED%95%99%EC%9E%AC%EB%8B%A8%EC%84%A4%EB%A6%BD%EB%93%B1%EC%97%90%EA%B4%80%ED%95%9C%EB%B2%95%EB%A5%A0",
+  "edu-facility": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B5%90%EC%9C%A1%EC%8B%9C%EC%84%A4%EB%93%B1%EC%9D%98%EC%95%88%EC%A0%84%EB%B0%8F%EC%9C%A0%EC%A7%80%EA%B4%80%EB%A6%AC%EB%93%B1%EC%97%90%EA%B4%80%ED%95%9C%EB%B2%95%EB%A5%A0",
+  "edu-environment": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B5%90%EC%9C%A1%ED%99%98%EA%B2%BD%20%EB%B3%B4%ED%98%B8%EC%97%90%20%EA%B4%80%ED%95%9C%20%EB%B2%95%EB%A5%A0",
   "intl-edu": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%9E%AC%EC%99%B8%EA%B5%AD%EB%AF%BC%EC%9D%98%EA%B5%90%EC%9C%A1%EC%A7%80%EC%9B%90%EB%93%B1%EC%97%90%EA%B4%80%ED%95%9C%EB%B2%95%EB%A5%A0",
+  "edu-intl-special": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B5%90%EC%9C%A1%EA%B5%AD%EC%A0%9C%ED%99%94%ED%8A%B9%EA%B5%AC%EC%9D%98%EC%A7%80%EC%A0%95%C2%B7%EC%9A%B4%EC%98%81%EB%B0%8F%EC%9C%A1%EC%84%B1%EC%97%90%EA%B4%80%ED%95%9C%ED%8A%B9%EB%B3%84%EB%B2%95",
+  "foreign-edu-inst": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B2%BD%EC%A0%9C%EC%9E%90%EC%9C%A0%EA%B5%AC%EC%97%AD%EB%B0%8F%EC%A0%9C%EC%A3%BC%EA%B5%AD%EC%A0%9C%EC%9E%90%EC%9C%A0%EB%8F%84%EC%8B%9C%EC%9D%98%EC%99%B8%EA%B5%AD%EA%B5%90%EC%9C%A1%EA%B8%B0%EA%B4%80%EC%84%A4%EB%A6%BD%C2%B7%EC%9A%B4%EC%98%81%EC%97%90%EA%B4%80%ED%95%9C%ED%8A%B9%EB%B3%84%EB%B2%95",
   "elem-decree": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%B4%88%C2%B7%EC%A4%91%EB%93%B1%EA%B5%90%EC%9C%A1%EB%B2%95%EC%8B%9C%ED%96%89%EB%A0%B9",
   "higher-decree": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B3%A0%EB%93%B1%EA%B5%90%EC%9C%A1%EB%B2%95%EC%8B%9C%ED%96%89%EB%A0%B9",
   "lifelong-decree": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%ED%8F%89%EC%83%9D%EA%B5%90%EC%9C%A1%EB%B2%95%EC%8B%9C%ED%96%89%EB%A0%B9",
   "teacher-decree": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B5%90%EC%9B%90%EC%9D%98%EC%A7%80%EC%9C%84%ED%96%A5%EC%83%81%EB%B0%8F%EA%B5%90%EC%9C%A1%ED%99%9C%EB%8F%99%EB%B3%B4%ED%98%B8%EB%A5%BC%EC%9C%84%ED%95%9C%ED%8A%B9%EB%B3%84%EB%B2%95%EC%8B%9C%ED%96%89%EB%A0%B9",
   "finance-decree": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%A7%80%EB%B0%A9%EA%B5%90%EC%9C%A1%EC%9E%AC%EC%A0%95%EA%B5%90%EB%B6%80%EA%B8%88%EB%B2%95%EC%8B%9C%ED%96%89%EB%A0%B9",
+  "nec-decree": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B5%AD%EA%B0%80%EA%B5%90%EC%9C%A1%EC%9C%84%EC%9B%90%ED%9A%8C%EC%84%A4%EC%B9%98%EB%B0%8F%EC%9A%B4%EC%98%81%EC%97%90%EA%B4%80%ED%95%9C%EB%B2%95%EB%A5%A0%EC%8B%9C%ED%96%89%EB%A0%B9",
   "elem-rule": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EC%B4%88%C2%B7%EC%A4%91%EB%93%B1%EA%B5%90%EC%9C%A1%EB%B2%95%EC%8B%9C%ED%96%89%EA%B7%9C%EC%B9%99",
   "curriculum-notice": "https://www.law.go.kr/%ED%96%89%EC%A0%95%EA%B7%9C%EC%B9%99/%EC%B4%88%C2%B7%EC%A4%91%EB%93%B1%ED%95%99%EA%B5%90%20%EA%B5%90%EC%9C%A1%EA%B3%BC%EC%A0%95",
   "special-edu-notice": "https://www.law.go.kr/%ED%96%89%EC%A0%95%EA%B7%9C%EC%B9%99/%ED%8A%B9%EC%88%98%EA%B5%90%EC%9C%A1%20%EA%B5%90%EC%9C%A1%EA%B3%BC%EC%A0%95",
-  "digital-edu": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EB%94%94%EC%A7%80%ED%84%B8%20%EA%B8%B0%EB%B0%98%EC%9D%98%20%EC%9B%90%EA%B2%A9%EA%B5%90%EC%9C%A1%20%ED%99%9C%EC%84%B1%ED%99%94%20%EA%B8%B0%EB%B3%B8%EB%B2%95",
-  "intl-coop": "https://www.law.go.kr/LSW/lsSc.do?menuId=1&subMenuId=15&tabMenuId=81&query=%EA%B5%AD%EC%A0%9C%EA%B0%9C%EB%B0%9C%ED%98%91%EB%A0%A5%EA%B8%B0%EB%B3%B8%EB%B2%95",
+  "textbook-rule": "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EA%B5%90%EA%B3%BC%EC%9A%A9%EB%8F%84%EC%84%9C%EC%97%90%EA%B4%80%ED%95%9C%EA%B7%9C%EC%A0%95",
 };
 
 // ── 3. 색상 팔레트 ──
@@ -840,7 +927,7 @@ export default function EducationLawOntologyApp() {
       <div style={{ maxWidth: 1400, margin: "20px auto 0", padding: "16px 24px", borderTop: "1px solid #1e293b" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span style={{ fontSize: 10, color: "#475569" }}>
-            국가교육발전계획 2028-2037 | 교육법률 온톨로지 시각화 v1.0
+            국가교육발전계획 2028-2037 | 교육법률 온톨로지 시각화 v2.0 (2026.3.29. 법령 최신화)
           </span>
           <span style={{ fontSize: 10, color: "#475569" }}>
             Architecture Reference: MiroFish (GraphRAG + Multi-Agent Simulation)
