@@ -190,6 +190,158 @@ const ONTOLOGY_DATA = {
   ]
 };
 
+// ── 1-1. 법률 × 프로젝트 분야별 관련 조항 매핑 ──
+// 키: "법률ID::프로젝트분야ID", 값: 관련 조항 배열
+const ARTICLE_MAPPING = {
+  // ═══ 대한민국 헌법 ═══
+  "constitution::01_AI디지털전략": [{ art: "제31조①", title: "교육받을 권리", desc: "모든 국민은 능력에 따라 균등하게 교육을 받을 권리 — AI 교육 접근권 근거" }, { art: "제22조①", title: "학문·예술의 자유", desc: "학문과 예술의 자유 — AI 연구·교육 자유의 헌법적 기반" }],
+  "constitution::02_교육과정혁신": [{ art: "제31조②", title: "교육의무·무상교육", desc: "의무교육은 무상으로 한다" }, { art: "제31조④", title: "교육의 자주성", desc: "교육의 자주성·전문성·정치적 중립성 및 대학의 자율성" }],
+  "constitution::03_교원정책": [{ art: "제31조⑥", title: "교육제도 법정주의", desc: "교육제도와 그 운영, 교육재정 및 교원의 지위에 관한 기본적인 사항은 법률로 정한다" }],
+  "constitution::04_평가선발체제": [{ art: "제31조①", title: "균등한 교육", desc: "능력에 따라 균등하게 교육을 받을 권리 — 공정한 평가·선발의 근거" }],
+  "constitution::05_교육재정": [{ art: "제31조⑥", title: "교육재정 법정주의", desc: "교육재정에 관한 기본적인 사항은 법률로 정한다" }],
+  "constitution::06_교육거버넌스": [{ art: "제31조④", title: "교육 자주성·중립성", desc: "교육의 자주성·전문성·정치적 중립성 및 대학의 자율성은 법률이 정하는 바에 의하여 보장" }],
+  "constitution::07_평생교육_직업교육": [{ art: "제31조⑤", title: "평생교육 진흥", desc: "국가는 평생교육을 진흥하여야 한다" }],
+  "constitution::08_교육복지_형평성": [{ art: "제31조①", title: "균등한 교육받을 권리", desc: "모든 국민은 능력에 따라 균등하게 교육을 받을 권리" }, { art: "제31조③", title: "의무교육 무상", desc: "의무교육은 무상으로 한다 — 교육복지의 헌법적 근거" }],
+  "constitution::09_글로벌교육협력": [{ art: "제6조①", title: "조약·국제법규 준수", desc: "헌법에 의하여 체결·공포된 조약과 일반적으로 승인된 국제법규" }],
+
+  // ═══ 교육기본법 ═══
+  "edu-basic::01_AI디지털전략": [{ art: "제23조", title: "교육의 정보화", desc: "국가와 지방자치단체는 정보화교육 및 정보통신매체를 이용한 교육을 지원·육성" }, { art: "제23조의2", title: "학생정보의 보호", desc: "학생의 개인정보 보호에 관한 사항" }],
+  "edu-basic::02_교육과정혁신": [{ art: "제2조", title: "교육이념", desc: "홍익인간 이념 아래 인격 도야, 자주적 생활능력 및 민주시민 자질" }, { art: "제9조", title: "학교교육", desc: "학교교육은 학생의 창의력 계발 및 인성 함양을 위한 교육" }],
+  "edu-basic::03_교원정책": [{ art: "제14조", title: "교원", desc: "학교교육에서 교원의 전문성은 존중되며, 교원의 경제적·사회적 지위는 우대" }, { art: "제14조②", title: "교원의 교육권", desc: "교원은 법률로 정하는 바에 의하여 교육자로서 갖추어야 할 품성과 자질을 향상" }],
+  "edu-basic::04_평가선발체제": [{ art: "제9조④", title: "학교교육 평가", desc: "학교교육에 관한 기본적인 사항 — 교육목표·교육과정·교재·교육평가 법정" }],
+  "edu-basic::05_교육재정": [{ art: "제7조", title: "교육재정", desc: "국가와 지방자치단체는 교육재정을 안정적으로 확보하여야 한다" }],
+  "edu-basic::06_교육거버넌스": [{ art: "제5조", title: "교육의 자주성", desc: "국가와 지방자치단체는 교육의 자주성과 전문성을 보장" }, { art: "제5조②", title: "지방교육 자율성", desc: "국가는 지방자치단체의 교육에 관한 자율성을 존중" }],
+  "edu-basic::07_평생교육_직업교육": [{ art: "제10조", title: "사회교육", desc: "국민의 평생교육을 위한 모든 형태의 사회교육 장려" }, { art: "제21조", title: "직업교육", desc: "국가와 지방자치단체는 학생의 직업교육을 위하여 필요한 시책을 수립·실시" }],
+  "edu-basic::08_교육복지_형평성": [{ art: "제4조", title: "교육의 기회균등", desc: "모든 국민은 교육에서 차별을 받지 아니한다" }, { art: "제18조", title: "특수교육", desc: "국가와 지방자치단체는 특수교육을 진흥하여야 한다" }, { art: "제19조", title: "영재교육", desc: "국가와 지방자치단체는 영재교육을 실시하여야 한다" }],
+  "edu-basic::09_글로벌교육협력": [{ art: "제20조", title: "유학교육", desc: "국가는 유학에 관한 시책을 수립·실시" }, { art: "제29조", title: "국제교육", desc: "국가는 국제교육 및 교류를 위한 시책 강구" }],
+
+  // ═══ 초·중등교육법 ═══
+  "elementary::02_교육과정혁신": [{ art: "제23조", title: "교육과정", desc: "학교는 교육과정을 운영하여야 하며, 국가교육위원회가 교육과정의 기준과 내용 고시" }, { art: "제23조의2", title: "통합교육과정", desc: "통합교육과정 편성·운영 근거" }, { art: "제24조", title: "수업 등", desc: "수업연한·학기·수업일수·학급편성·휴업일·휴학 등" }, { art: "제29조", title: "교과용 도서의 사용", desc: "학교에서 사용하는 교과용 도서의 범위·저작·검정·인정 등" }],
+  "elementary::03_교원정책": [{ art: "제19조", title: "교직원의 구분", desc: "학교에 교장·교감·수석교사·교사를 둔다" }, { art: "제20조", title: "교직원의 임무", desc: "교장은 교무를 통할하고 소속 교직원을 지도·감독" }, { art: "제21조", title: "교원의 자격", desc: "교사의 자격기준은 대통령령으로 정한다" }],
+  "elementary::04_평가선발체제": [{ art: "제25조", title: "학교생활기록", desc: "학교의 장은 학생의 학업성취도와 인성 등을 종합적으로 관찰·평가하여 기록" }, { art: "제47조", title: "고등학교 입학전형", desc: "고등학교 입학에 관한 전형" }, { art: "제47조의2", title: "입학전형 기본사항", desc: "고등학교 입학전형의 기본사항은 시·도 조례로 정한다" }],
+  "elementary::08_교육복지_형평성": [{ art: "제28조", title: "학습부진아 등에 대한 교육", desc: "학습부진·성격장애·지적장애를 가진 사람에 대한 교육시책 강구" }, { art: "제60조의3", title: "학생의 인권보장", desc: "학교의 설립자·경영자와 학교의 장은 학생의 인권을 보장" }],
+
+  // ═══ 고등교육법 ═══
+  "higher-edu::02_교육과정혁신": [{ art: "제21조", title: "교육과정의 운영", desc: "학교는 교육과정을 자율적으로 운영하되, 일정 기준을 준수" }, { art: "제22조", title: "수업", desc: "수업연한·학기·수업일수·학점인정 등에 관한 사항" }],
+  "higher-edu::04_평가선발체제": [{ art: "제34조", title: "입학", desc: "학생의 입학에 관한 사항" }, { art: "제34조의5", title: "입학전형 기본사항", desc: "대학의 장이 실시하는 입학전형의 기본사항" }, { art: "제35조", title: "학위", desc: "학사·석사·박사 학위 수여" }, { art: "제11조의2", title: "평가·인증", desc: "학교 평가·인증에 관한 사항" }],
+  "higher-edu::05_교육재정": [{ art: "제11조", title: "등록금", desc: "학교의 등록금에 관한 사항, 등록금심의위원회 운영" }, { art: "제7조", title: "학교의 설립", desc: "대학 설립에 필요한 시설·교원 등의 기준" }],
+
+  // ═══ 유아교육법 ═══
+  "early-child::08_교육복지_형평성": [{ art: "제12조", title: "교육과정 등", desc: "유아교육과정은 교육부장관이 정한다 — 무상교육 확대" }, { art: "제24조", title: "무상교육", desc: "유아의 초등학교 취학 전 3년간 무상교육" }, { art: "제26조", title: "비용부담", desc: "유아교육 비용은 국가 및 지방자치단체가 부담" }],
+  "early-child::02_교육과정혁신": [{ art: "제13조", title: "교육과정", desc: "유치원의 교육과정·방과후 과정 운영 및 기준" }, { art: "제13조의2", title: "방과후 과정", desc: "유치원 방과후 과정의 운영에 관한 사항" }],
+
+  // ═══ 평생교육법 ═══
+  "lifelong::07_평생교육_직업교육": [{ art: "제2조", title: "정의", desc: "평생교육이란 학교의 정규교육과정을 제외한 학력보완교육, 성인문자해득교육, 직업능력교육, 인문교양교육, 문화예술교육, 시민참여교육" }, { art: "제15조", title: "평생학습도시", desc: "시·군·구는 평생학습도시로 지정받아 평생교육 기반 구축" }, { art: "제19조", title: "국가평생교육진흥원", desc: "평생교육 진흥 관련 업무를 수행하기 위해 설립" }, { art: "제31조", title: "학교형태 평생교육시설", desc: "학교형태의 평생교육시설 설치·운영" }],
+
+  // ═══ 특수교육법 ═══
+  "special-edu::08_교육복지_형평성": [{ art: "제3조", title: "의무교육 등", desc: "만 3세부터 만 17세까지 특수교육 의무교육. 영아 및 만 18세 이상도 무상교육" }, { art: "제15조", title: "특수교육대상자 선정", desc: "특수교육대상자 선정 기준 및 절차" }, { art: "제17조", title: "특수교육대상자 배치 및 교육", desc: "일반학교 통합교육 우선 배치 원칙" }, { art: "제21조", title: "통합교육", desc: "통합교육 실시 및 통합학급 운영" }, { art: "제22조", title: "개별화교육", desc: "특수교육대상자 개별화교육계획 수립·시행" }],
+
+  // ═══ 교원지위법 ═══
+  "teacher-status::03_교원정책": [{ art: "제2조", title: "교원 예우", desc: "국가·지자체·그 밖의 공공단체는 교원이 사회적으로 존경받고 높은 긍지와 사명감을 가지도록 노력" }, { art: "제3조", title: "교원 보수 우대", desc: "교원의 보수는 우대하여야 한다" }, { art: "제4조", title: "교원 신분보장", desc: "교원은 형의 선고 등 법률로 정하는 사유에 의하지 아니하고는 의사에 반하여 휴직·면직 등 불리한 처분을 받지 아니한다" }, { art: "제14조의2", title: "교육활동 침해 금지", desc: "누구든지 교원의 정당한 교육활동을 방해하여서는 아니 된다" }, { art: "제15조", title: "교원치유지원센터", desc: "교원의 교육활동 침해에 대한 치유·보호 지원" }],
+
+  // ═══ 교육공무원법 ═══
+  "edu-civil-servant::03_교원정책": [{ art: "제10조", title: "임용권", desc: "대학의 장, 교육감이 각 교원의 임용권을 가진다" }, { art: "제11조", title: "자격", desc: "교육공무원의 자격기준은 따로 법률로 정한다" }, { art: "제13조", title: "신규채용", desc: "교육공무원의 채용은 공개전형에 의한다" }, { art: "제38조", title: "연수기관", desc: "교원의 연수를 위해 연수기관을 설치·운영" }, { art: "제41조", title: "연수의 기회균등", desc: "교원은 연수기관에서 재교육을 받을 수 있다" }],
+  "edu-civil-servant::06_교육거버넌스": [{ art: "제33조의2", title: "교육전문직원", desc: "장학관·장학사·교육연구관·교육연구사의 자격·임용" }, { art: "제34조", title: "겸직 금지", desc: "교육공무원은 다른 직을 겸할 수 없다" }],
+
+  // ═══ 국가교육위원회법 ═══
+  "nec-law::06_교육거버넌스": [{ art: "제2조", title: "위원회 설치", desc: "국가교육발전계획 수립, 교육정책 국민의견 수렴·조정을 위해 대통령 소속으로 설치" }, { art: "제3조", title: "위원회 구성", desc: "상임위원 3명 포함 21명으로 구성. 국회추천 9명, 대통령 지명 5명, 교원단체·대학협의회 추천 등" }, { art: "제10조", title: "소관 사무", desc: "중장기 교육발전계획 수립, 교육과정 심의·의결, 교육정책 평가 등" }, { art: "제13조", title: "소위원회", desc: "교육과정소위원회 등 분야별 소위원회 운영" }],
+  "nec-law::02_교육과정혁신": [{ art: "제10조제1항제2호", title: "교육과정 심의·의결", desc: "국가교육과정의 기준과 내용에 관한 기본적 사항 심의·의결" }, { art: "제12조", title: "교육과정 정책", desc: "교육과정에 관한 심의·의결·자문 및 교육과정 개정" }, { art: "제11조", title: "국가교육발전계획", desc: "10년 단위 중장기 국가교육발전계획 수립" }],
+
+  // ═══ 지방교육자치법 ═══
+  "local-edu::06_교육거버넌스": [{ art: "제2조", title: "교육·학예사무 관장", desc: "지방자치단체의 교육·학예에 관한 사무는 특별시·광역시·도의 사무로 한다" }, { art: "제18조", title: "교육감", desc: "시·도의 교육·학예에 관한 사무의 집행기관으로 교육감을 둔다" }, { art: "제20조", title: "교육감 관장사무", desc: "교육과정 운영, 교원 인사, 학교 설립·폐지 등에 관한 사무 관장" }, { art: "제22조", title: "교육감 선거", desc: "교육감은 주민의 보통·평등·직접·비밀선거에 의하여 선출" }, { art: "제25조", title: "교육규칙", desc: "교육감은 법률 또는 조례의 범위 안에서 교육규칙을 제정" }],
+
+  // ═══ 사립학교법 ═══
+  "private-school::06_교육거버넌스": [{ art: "제2조", title: "정의", desc: "사립학교·학교법인의 정의 — 사학의 자주성 확보" }, { art: "제10조", title: "설립 허가", desc: "학교법인의 설립허가 기준 및 절차" }, { art: "제14조", title: "임원", desc: "학교법인에 이사 7인 이상, 감사 2인 이상을 두어야 한다" }, { art: "제53조의2", title: "교원인사위원회", desc: "교원의 임용에 관한 사항을 심의하기 위해 교원인사위원회 설치" }],
+
+  // ═══ 지방교육재정교부금법 ═══
+  "edu-finance::05_교육재정": [{ art: "제3조", title: "교부금 종류", desc: "보통교부금, 특별교부금, 교육급여교부금으로 구분" }, { art: "제5조", title: "보통교부금 배분", desc: "기준재정수요액이 기준재정수입액을 초과하는 지방자치단체에 배분" }, { art: "제6조", title: "기준재정수요액", desc: "교육기관의 유지, 교육과정 운영, 교직원 인건비 등 산정기준" }, { art: "제9조", title: "특별교부금", desc: "지역교육 현안수요, 국가시책사업, 재해대책수요 등에 교부" }],
+
+  // ═══ 고등·평생교육지원특별회계법 ═══
+  "higher-lifelong-fund::05_교육재정": [{ art: "제1조", title: "목적", desc: "고등교육 및 평생·직업교육 지원을 위한 특별회계 설치·운영" }, { art: "제4조", title: "세입", desc: "일반회계 전입금, 교육세 전입금, 기금수익 등" }],
+  "higher-lifelong-fund::07_평생교육_직업교육": [{ art: "제5조", title: "세출", desc: "고등교육 및 평생·직업교육 지원, 대학 연구·인재양성 지원" }],
+
+  // ═══ 학교폭력예방법 ═══
+  "school-violence::08_교육복지_형평성": [{ art: "제12조", title: "학교폭력대책심의위원회", desc: "피해학생 보호 및 가해학생에 대한 조치를 심의하기 위해 교육지원청에 설치" }, { art: "제16조", title: "피해학생 보호", desc: "심리상담·조언, 일시보호, 치료를 위한 요양, 학급교체 등" }, { art: "제17조", title: "가해학생 조치", desc: "서면사과, 접촉·협박·보복행위 금지, 출석정지, 학급교체, 전학, 퇴학 등" }],
+  "school-violence::06_교육거버넌스": [{ art: "제7조", title: "교육부장관 책임", desc: "학교폭력 예방 및 대책에 관한 기본계획 5년마다 수립" }, { art: "제11조", title: "교육감 책임", desc: "지역 실시계획 수립 및 학교폭력 실태조사" }],
+
+  // ═══ 학교안전법 ═══
+  "school-safety::08_교육복지_형평성": [{ art: "제4조", title: "학교안전사고 예방", desc: "학교의 장은 시설·장비 점검 및 안전교육 계획 수립·실시" }, { art: "제11조", title: "학교안전공제회", desc: "학교안전사고 보상을 위한 공제회 설치·운영" }, { art: "제15조", title: "공제급여", desc: "요양급여, 장해급여, 간병급여, 유족급여 등" }],
+
+  // ═══ 학교급식법 ═══
+  "school-meal::08_교육복지_형평성": [{ art: "제4조", title: "학교급식 대상", desc: "초등학교·중학교·고등학교·특수학교 및 그 밖의 학교" }, { art: "제8조", title: "경비부담", desc: "학교급식에 필요한 시설·설비비는 설립경영자 부담, 급식 운영비는 학생부담 원칙(지원 가능)" }],
+  "school-meal::05_교육재정": [{ art: "제9조", title: "급식에 관한 경비 지원", desc: "국가 또는 지방자치단체는 학교급식에 필요한 경비를 지원할 수 있다" }],
+
+  // ═══ 학교보건법 ═══
+  "school-health::08_교육복지_형평성": [{ art: "제7조", title: "건강검사", desc: "학교의 장은 학생과 교직원에 대하여 건강검사를 실시" }, { art: "제9조", title: "학생의 보건관리", desc: "학교의 장은 학생의 심신 건강에 관한 보건 시책" }, { art: "제15조", title: "보건교육", desc: "학교에서의 보건교육에 관한 사항" }],
+
+  // ═══ 공교육정상화법 ═══
+  "public-edu-norm::02_교육과정혁신": [{ art: "제8조", title: "선행교육 운영 금지", desc: "학교는 국가교육과정 및 시·도교육과정에 따라 학교교육과정을 편성하여야 하며 선행교육·선행학습을 유발하는 행위 금지" }],
+  "public-edu-norm::04_평가선발체제": [{ art: "제10조", title: "대학 입학전형 영향평가", desc: "대학의 장은 입학전형이 공교육 정상화에 미치는 영향을 평가하여 공개" }, { art: "제12조", title: "선행학습 유발 광고 금지", desc: "학원 등의 선행학습 유발 광고 금지" }],
+
+  // ═══ 영재교육 진흥법 ═══
+  "gifted-edu::02_교육과정혁신": [{ art: "제5조", title: "영재교육진흥종합계획", desc: "교육부장관은 5년마다 영재교육진흥종합계획을 수립" }, { art: "제12조", title: "영재학교", desc: "영재를 대상으로 하는 교육과정을 운영하는 학교" }],
+  "gifted-edu::04_평가선발체제": [{ art: "제5조의3", title: "영재교육대상자 선발", desc: "영재교육 대상자의 선발 기준·절차·방법" }, { art: "제14조", title: "영재교육과정", desc: "영재교육기관의 교육과정 편성·운영" }],
+
+  // ═══ 학교체육 진흥법 ═══
+  "school-sports::02_교육과정혁신": [{ art: "제6조", title: "학교체육 진흥 계획", desc: "교육부장관은 학교체육 진흥 시책 수립, 체육수업 내실화" }, { art: "제10조", title: "학교스포츠클럽", desc: "학교의 장은 학교스포츠클럽을 운영하여 체육활동 활성화" }],
+  "school-sports::08_교육복지_형평성": [{ art: "제11조", title: "학교운동부", desc: "학생선수의 학습권 보장 및 인권 보호" }],
+
+  // ═══ 학점인정법 ═══
+  "credit-recognition::07_평생교육_직업교육": [{ art: "제3조", title: "평가인정", desc: "교육부장관은 교육훈련기관의 교육과정에 대하여 평가인정 실시" }, { art: "제7조", title: "학점인정", desc: "평가인정 학습과정, 독학학위, 자격취득 등을 통한 학점인정" }, { art: "제8조", title: "학력인정", desc: "일정 학점을 인정받은 자에게 학력 인정" }, { art: "제9조", title: "학위수여", desc: "소정의 학점을 인정받은 자에게 학위 수여" }],
+  "credit-recognition::04_평가선발체제": [{ art: "제7조", title: "학점인정 기준", desc: "다양한 학습경험을 학점으로 인정하는 기준과 절차" }],
+
+  // ═══ 산학협력법 ═══
+  "industry-edu::07_평생교육_직업교육": [{ art: "제2조", title: "정의", desc: "산업교육·산학연협력의 정의 — 산업수요 맞춤형 인력 양성" }, { art: "제8조", title: "현장실습", desc: "학교의 학생에 대한 현장실습 운영" }, { art: "제25조", title: "산학협력단", desc: "대학에 산학협력단을 설치·운영" }],
+  "industry-edu::02_교육과정혁신": [{ art: "제6조", title: "산업교육 진흥", desc: "산업수요와 인력공급의 연계를 위한 교육과정 개편" }],
+
+  // ═══ AI/디지털 관련법 ═══
+  "ai-basic::01_AI디지털전략": [{ art: "제2조", title: "정의", desc: "인공지능, 고영향 인공지능 등 정의" }, { art: "제30조", title: "고영향 인공지능", desc: "교육 분야를 고영향 AI로 지정 — 학생평가 AI 등에 엄격한 규제" }, { art: "제10조", title: "인공지능 종합시책", desc: "3년마다 인공지능 종합시책 수립" }, { art: "제27조", title: "인재양성", desc: "인공지능 분야 전문인력 양성" }],
+  "digital-remote-edu::01_AI디지털전략": [{ art: "제2조", title: "정의", desc: "원격교육이란 정보통신기술을 활용하여 시간적·공간적 제약 없이 이루어지는 교육" }, { art: "제5조", title: "기본계획 수립", desc: "교육부장관은 5년마다 원격교육 활성화 기본계획 수립" }, { art: "제10조", title: "원격수업 제공", desc: "학교는 교육과정 운영상 필요한 경우 원격수업 실시" }],
+  "digital-remote-edu::02_교육과정혁신": [{ art: "제10조", title: "원격수업", desc: "원격수업의 운영 방법 및 출석·평가 기준" }, { art: "제12조", title: "디지털 콘텐츠", desc: "원격교육 콘텐츠 개발·보급·활용 지원" }],
+  "data-basic::01_AI디지털전략": [{ art: "제3조", title: "기본원칙", desc: "데이터의 생산·수집·활용 촉진 및 데이터산업 발전 기반 조성" }, { art: "제12조", title: "데이터 표준화", desc: "데이터의 표준화 및 품질관리" }, { art: "제15조", title: "데이터 유통·거래", desc: "데이터 유통 및 거래 활성화" }],
+  "sci-math-info::01_AI디지털전략": [{ art: "제6조", title: "정보교육 진흥", desc: "국가와 지방자치단체는 정보 교육의 진흥을 위하여 필요한 시책을 수립·실시" }, { art: "제7조", title: "교육과정 반영", desc: "과학·수학·정보 교육 진흥을 위한 교육과정 편성·운영" }],
+  "sci-math-info::02_교육과정혁신": [{ art: "제7조", title: "교육과정 반영", desc: "과학·수학·정보 교과를 교육과정에 적극 반영" }, { art: "제8조", title: "교원 연수", desc: "과학·수학·정보 교과 교원의 전문성 신장을 위한 연수" }],
+
+  // ═══ 교육시설법 ═══
+  "edu-facility::05_교육재정": [{ art: "제5조", title: "교육시설 기본계획", desc: "교육부장관은 5년마다 교육시설 기본계획 수립" }, { art: "제7조", title: "안전점검", desc: "교육시설의 정기·수시 안전점검 실시" }],
+  "edu-facility::08_교육복지_형평성": [{ art: "제10조", title: "안전조치", desc: "위험 교육시설에 대한 안전조치 실시" }],
+
+  // ═══ 교육환경보호법 ═══
+  "edu-environment::08_교육복지_형평성": [{ art: "제8조", title: "교육환경보호구역", desc: "학교 경계 또는 학교설립예정지 경계로부터 직선거리 200m 이내를 교육환경보호구역으로 설정" }, { art: "제9조", title: "금지행위", desc: "교육환경보호구역 내 유해업소 등 설치 금지" }],
+
+  // ═══ 글로벌/국제 ═══
+  "intl-edu::09_글로벌교육협력": [{ art: "제5조", title: "한국교육원", desc: "재외국민에 대한 교육지원을 위해 한국교육원 설치·운영" }, { art: "제8조", title: "한국학교", desc: "재외국민 자녀 교육을 위해 한국학교 설립" }, { art: "제10조", title: "교육비 지원", desc: "재외국민 자녀의 교육비 지원" }],
+  "edu-intl-special::09_글로벌교육협력": [{ art: "제6조", title: "교육국제화특구 지정", desc: "시·도지사가 교육국제화특구 지정 신청" }, { art: "제10조", title: "외국교육기관 설립", desc: "교육국제화특구 내 외국교육기관 설립 허용" }],
+  "foreign-edu-inst::09_글로벌교육협력": [{ art: "제2조", title: "외국교육기관 정의", desc: "외국의 법령에 의하여 설립된 교육기관" }, { art: "제4조", title: "설립 승인", desc: "경제자유구역 등에서의 외국교육기관 설립 승인 절차" }],
+
+  // ═══ 장학재단법 ═══
+  "scholarship::05_교육재정": [{ art: "제3조", title: "장학재단 설립", desc: "학자금 대출·장학금 지급 업무를 수행하기 위해 한국장학재단 설립" }, { art: "제16조", title: "학자금 대출", desc: "대학생에 대한 학자금 대출 사업 수행" }],
+  "scholarship::08_교육복지_형평성": [{ art: "제17조", title: "장학금", desc: "경제적 어려움이 있는 학생에 대한 장학금 지급 사업" }, { art: "제18조", title: "국가근로장학", desc: "대학생 국가근로장학 사업 운영" }],
+
+  // ═══ 시행령·시행규칙·고시 ═══
+  "elem-decree::02_교육과정혁신": [{ art: "제43조", title: "교육과정 편성·운영", desc: "초·중등학교 교육과정의 편성·운영 기준 세부사항" }, { art: "제48조", title: "수업운영방법", desc: "수업의 운영방법에 관한 세부사항" }],
+  "higher-decree::04_평가선발체제": [{ art: "제31조", title: "입학 방법", desc: "대학 입학 전형 방법의 세부사항" }, { art: "제33조", title: "학위수여 요건", desc: "학위 수여의 세부 요건" }],
+  "lifelong-decree::07_평생교육_직업교육": [{ art: "제6조", title: "평생교육사", desc: "평생교육사의 자격·배치·양성에 관한 사항" }, { art: "제15조", title: "학점은행제", desc: "학점인정 기준 및 학위수여 절차 세부사항" }],
+  "teacher-decree::03_교원정책": [{ art: "제3조", title: "교원 보수", desc: "교원의 보수체계에 관한 세부사항" }],
+  "finance-decree::05_교육재정": [{ art: "제4조", title: "기준재정수요액 산정", desc: "기준재정수요액의 산정 방법 및 측정항목 세부기준" }],
+  "nec-decree::06_교육거버넌스": [{ art: "제3조", title: "위원 자격요건", desc: "위원의 구체적 자격요건 및 추천 절차" }, { art: "제11조", title: "소위원회 운영", desc: "소위원회의 구성 및 운영에 관한 세부사항" }],
+  "school-setup-rule::05_교육재정": [{ art: "제2조", title: "교지 기준", desc: "학교 설립에 필요한 교지면적 기준" }, { art: "제3조", title: "교사 기준", desc: "학교 설립에 필요한 교사(校舍) 기준" }],
+  "school-setup-rule::06_교육거버넌스": [{ art: "제5조", title: "교원 배치 기준", desc: "학교별 교원 수 배치 기준" }],
+  "elem-rule::03_교원정책": [{ art: "제20조", title: "교원자격검정", desc: "교원자격의 검정에 관한 세부사항" }, { art: "제21조", title: "자격증 수여", desc: "교원자격증의 수여 절차" }],
+  "curriculum-notice::02_교육과정혁신": [{ art: "총론", title: "교육과정 기준", desc: "초·중·고 공통 교육과정 및 선택 교육과정 기준 — 2022 개정 교육과정" }, { art: "각론", title: "교과별 교육과정", desc: "각 교과의 교육목표·내용체계·성취기준" }],
+  "curriculum-notice::01_AI디지털전략": [{ art: "총론 제4항", title: "디지털·AI 소양", desc: "디지털·AI 소양을 모든 교과에 반영하도록 규정" }],
+  "special-edu-notice::08_교육복지_형평성": [{ art: "총론", title: "특수교육과정 기준", desc: "특수교육대상자의 교육과정 편성·운영 기준" }],
+  "eval-notice::04_평가선발체제": [{ art: "제15조", title: "학업성적 평가", desc: "학교생활기록부 학업성적 평가 방법 및 기록 기준" }, { art: "제18조", title: "행동특성 기록", desc: "학생의 행동특성 및 종합의견 기록 방법" }],
+  "textbook-rule::02_교육과정혁신": [{ art: "제2조", title: "교과용 도서 구분", desc: "교과서·지도서·인정도서의 구분 및 범위" }, { art: "제11조", title: "검정", desc: "교과용 도서의 검정 기준 및 절차" }],
+  "textbook-rule::01_AI디지털전략": [{ art: "제4조", title: "디지털 교과서", desc: "디지털 형태의 교과용 도서 개발·보급 근거" }],
+
+  // ═══ 지방조례 ═══
+  "local-ord-1::06_교육거버넌스": [{ art: "학생인권조례", title: "학생인권 보호", desc: "학생의 인권 보장 및 학교 내 인권교육 실시" }, { art: "교육행정기관조례", title: "교육행정 운영", desc: "교육청 조직·운영에 관한 자치법규" }],
+  "local-ord-1::08_교육복지_형평성": [{ art: "학교급식조례", title: "무상급식", desc: "학교급식 무상 지원 범위 및 예산에 관한 사항" }, { art: "교육환경보호조례", title: "교육환경 보호", desc: "시·도별 교육환경보호 세부기준" }],
+  "local-ord-2::02_교육과정혁신": [{ art: "편성지침", title: "교육과정 편성", desc: "시·도 수준 교육과정 편성 세부기준 — 국가교육과정의 지역화" }],
+  "local-ord-2::06_교육거버넌스": [{ art: "편성지침", title: "자율편성 범위", desc: "시·도교육청의 교육과정 자율편성 범위 및 기준" }],
+};
+
 // ── 2. 멀티에이전트 시뮬레이션 데이터 (MiroFish 패턴) ──
 const AGENTS = [
   { id: "teacher", name: "교원 에이전트", emoji: "👨‍🏫", role: "현장 교사 집단", stance: 0.3, personality: "보수적이되 학생 중심, 행정부담 민감", color: "#10b981", interests: ["교원정책", "교육과정", "평가체제"] },
@@ -493,6 +645,7 @@ export default function EducationLawOntologyApp() {
   const [selectedNode, setSelectedNode] = useState(null);
   const [selectedArea, setSelectedArea] = useState(null);
   const [selectedScenario, setSelectedScenario] = useState(null);
+  const [selectedCell, setSelectedCell] = useState(null); // { lawId, areaId }
   const simulation = useSimulation();
 
   const highlightedLaws = useMemo(() => {
@@ -867,60 +1020,193 @@ export default function EducationLawOntologyApp() {
           </div>
         )}
 
-        {/* ── Tab 3: Law-Project Matrix ── */}
-        {activeTab === "matrix" && (
-          <div style={{ background: "#1e293b", borderRadius: 12, border: "1px solid #334155", padding: 20, overflowX: "auto" }}>
-            <h3 style={{ fontSize: 14, color: "#f1f5f9", margin: "0 0 16px", fontWeight: 700 }}>
-              📋 법률 × 프로젝트 분야 매핑 매트릭스
-            </h3>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
-              <thead>
-                <tr>
-                  <th style={{ padding: "8px 10px", textAlign: "left", borderBottom: "2px solid #334155", color: "#94a3b8", position: "sticky", left: 0, background: "#1e293b", minWidth: 160 }}>법률</th>
-                  <th style={{ padding: "8px 4px", textAlign: "center", borderBottom: "2px solid #334155", color: "#94a3b8", minWidth: 30 }}>유형</th>
-                  {ONTOLOGY_DATA.projectAreas.map(area => (
-                    <th key={area.id} style={{ padding: "8px 4px", textAlign: "center", borderBottom: "2px solid #334155", color: area.color, fontSize: 10, minWidth: 60 }}>
-                      <div>{area.icon}</div>
-                      <div style={{ marginTop: 2 }}>{area.label.replace(/[·]/g, "\n")}</div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {ONTOLOGY_DATA.nodes.map((node, i) => (
-                  <tr key={node.id} style={{ background: i % 2 === 0 ? "transparent" : "#0f172a22" }}>
-                    <td style={{ padding: "6px 10px", borderBottom: "1px solid #1e293b", color: "#e2e8f0", fontWeight: 500, position: "sticky", left: 0, background: i % 2 === 0 ? "#1e293b" : "#192035" }}>
-                      <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: TYPE_COLORS[node.type], marginRight: 6, verticalAlign: "middle" }} />
-                      {LAW_URLS[node.id] ? (
-                        <a href={LAW_URLS[node.id]} target="_blank" rel="noopener noreferrer"
-                          style={{ color: "#93c5fd", textDecoration: "none", borderBottom: "1px dotted #93c5fd55" }}
-                          onMouseOver={e => e.target.style.color = "#bfdbfe"}
-                          onMouseOut={e => e.target.style.color = "#93c5fd"}>
-                          {node.label} ↗
-                        </a>
-                      ) : node.label}
-                    </td>
-                    <td style={{ padding: "6px 4px", textAlign: "center", borderBottom: "1px solid #1e293b", color: TYPE_COLORS[node.type], fontSize: 9 }}>
-                      {TYPE_LABELS[node.type]}
-                    </td>
-                    {ONTOLOGY_DATA.projectAreas.map(area => {
-                      const linked = node.projectLink.includes(area.id) || node.projectLink.includes("all");
-                      return (
-                        <td key={area.id} style={{ padding: "6px 4px", textAlign: "center", borderBottom: "1px solid #1e293b" }}>
-                          {linked ? (
-                            <span style={{ display: "inline-block", width: 16, height: 16, borderRadius: 4, background: area.color + "33", border: `1px solid ${area.color}`, lineHeight: "16px", fontSize: 10, color: area.color }}>✓</span>
-                          ) : (
-                            <span style={{ color: "#1e293b" }}>-</span>
-                          )}
-                        </td>
-                      );
-                    })}
+        {/* ── Tab 3: Law-Project Matrix with Article Detail ── */}
+        {activeTab === "matrix" && (() => {
+          const cellArticles = selectedCell ? ARTICLE_MAPPING[`${selectedCell.lawId}::${selectedCell.areaId}`] : null;
+          const cellLaw = selectedCell ? ONTOLOGY_DATA.nodes.find(n => n.id === selectedCell.lawId) : null;
+          const cellArea = selectedCell ? ONTOLOGY_DATA.projectAreas.find(a => a.id === selectedCell.areaId) : null;
+          return (
+          <div style={{ display: "grid", gridTemplateColumns: selectedCell ? "1fr 340px" : "1fr", gap: 16 }}>
+            {/* Matrix Table */}
+            <div style={{ background: "#1e293b", borderRadius: 12, border: "1px solid #334155", padding: 20, overflowX: "auto" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                <h3 style={{ fontSize: 14, color: "#f1f5f9", margin: 0, fontWeight: 700 }}>
+                  📋 법률 × 프로젝트 분야 매핑 매트릭스
+                </h3>
+                <span style={{ fontSize: 10, color: "#64748b", padding: "3px 8px", background: "#0f172a", borderRadius: 6 }}>
+                  ✓ 셀을 클릭하면 관련 조항을 확인할 수 있습니다
+                </span>
+              </div>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11 }}>
+                <thead>
+                  <tr>
+                    <th style={{ padding: "8px 10px", textAlign: "left", borderBottom: "2px solid #334155", color: "#94a3b8", position: "sticky", left: 0, background: "#1e293b", minWidth: 160, zIndex: 2 }}>법률</th>
+                    <th style={{ padding: "8px 4px", textAlign: "center", borderBottom: "2px solid #334155", color: "#94a3b8", minWidth: 30 }}>유형</th>
+                    {ONTOLOGY_DATA.projectAreas.map(area => (
+                      <th key={area.id} style={{ padding: "8px 4px", textAlign: "center", borderBottom: "2px solid #334155", color: area.color, fontSize: 10, minWidth: 60 }}>
+                        <div>{area.icon}</div>
+                        <div style={{ marginTop: 2 }}>{area.label.replace(/[·]/g, "\n")}</div>
+                      </th>
+                    ))}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {ONTOLOGY_DATA.nodes.map((node, i) => (
+                    <tr key={node.id} style={{ background: i % 2 === 0 ? "transparent" : "#0f172a22" }}>
+                      <td style={{ padding: "6px 10px", borderBottom: "1px solid #1e293b", color: "#e2e8f0", fontWeight: 500, position: "sticky", left: 0, background: i % 2 === 0 ? "#1e293b" : "#192035", zIndex: 1 }}>
+                        <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: TYPE_COLORS[node.type], marginRight: 6, verticalAlign: "middle" }} />
+                        {LAW_URLS[node.id] ? (
+                          <a href={LAW_URLS[node.id]} target="_blank" rel="noopener noreferrer"
+                            style={{ color: "#93c5fd", textDecoration: "none", borderBottom: "1px dotted #93c5fd55" }}
+                            onMouseOver={e => e.target.style.color = "#bfdbfe"}
+                            onMouseOut={e => e.target.style.color = "#93c5fd"}>
+                            {node.label} ↗
+                          </a>
+                        ) : node.label}
+                      </td>
+                      <td style={{ padding: "6px 4px", textAlign: "center", borderBottom: "1px solid #1e293b", color: TYPE_COLORS[node.type], fontSize: 9 }}>
+                        {TYPE_LABELS[node.type]}
+                      </td>
+                      {ONTOLOGY_DATA.projectAreas.map(area => {
+                        const linked = node.projectLink.includes(area.id) || node.projectLink.includes("all");
+                        const mapKey = `${node.id}::${area.id}`;
+                        const hasArticles = !!ARTICLE_MAPPING[mapKey];
+                        const isSelected = selectedCell && selectedCell.lawId === node.id && selectedCell.areaId === area.id;
+                        return (
+                          <td key={area.id}
+                            onClick={() => {
+                              if (linked) {
+                                setSelectedCell(isSelected ? null : { lawId: node.id, areaId: area.id });
+                              }
+                            }}
+                            style={{
+                              padding: "6px 4px", textAlign: "center", borderBottom: "1px solid #1e293b",
+                              cursor: linked ? "pointer" : "default",
+                              background: isSelected ? area.color + "18" : "transparent",
+                              outline: isSelected ? `2px solid ${area.color}` : "none",
+                              outlineOffset: "-2px",
+                              borderRadius: isSelected ? 4 : 0,
+                              transition: "all 0.15s",
+                            }}>
+                            {linked ? (
+                              <span
+                                title={hasArticles ? "클릭하여 관련 조항 보기" : "관련 분야"}
+                                style={{
+                                  display: "inline-block", width: 20, height: 20, borderRadius: 4,
+                                  background: isSelected ? area.color + "55" : (hasArticles ? area.color + "33" : area.color + "18"),
+                                  border: `1.5px solid ${isSelected ? area.color : (hasArticles ? area.color : area.color + "66")}`,
+                                  lineHeight: "20px", fontSize: 10,
+                                  color: isSelected ? "#fff" : area.color,
+                                  fontWeight: hasArticles ? 700 : 400,
+                                  transition: "all 0.15s",
+                                }}>
+                                {hasArticles ? "§" : "✓"}
+                              </span>
+                            ) : (
+                              <span style={{ color: "#1e293b" }}>-</span>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Legend for matrix */}
+              <div style={{ display: "flex", gap: 16, marginTop: 12, padding: "8px 12px", background: "#0f172a", borderRadius: 8, alignItems: "center" }}>
+                <span style={{ fontSize: 10, color: "#64748b", fontWeight: 600 }}>범례:</span>
+                <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10 }}>
+                  <span style={{ display: "inline-block", width: 16, height: 16, borderRadius: 3, background: "#6366f133", border: "1.5px solid #6366f1", lineHeight: "16px", textAlign: "center", fontSize: 9, color: "#6366f1", fontWeight: 700 }}>§</span>
+                  <span style={{ color: "#94a3b8" }}>관련 조항 확인 가능</span>
+                </span>
+                <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10 }}>
+                  <span style={{ display: "inline-block", width: 16, height: 16, borderRadius: 3, background: "#6366f118", border: "1.5px solid #6366f166", lineHeight: "16px", textAlign: "center", fontSize: 9, color: "#6366f1" }}>✓</span>
+                  <span style={{ color: "#94a3b8" }}>관련 분야</span>
+                </span>
+                <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10 }}>
+                  <span style={{ color: "#1e293b", fontSize: 12 }}>-</span>
+                  <span style={{ color: "#94a3b8" }}>미관련</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Article Detail Side Panel */}
+            {selectedCell && (
+              <div style={{ background: "#1e293b", borderRadius: 12, border: `1px solid ${cellArea?.color || "#334155"}`, padding: 16, alignSelf: "start", position: "sticky", top: 20 }}>
+                {/* Panel Header */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                  <div>
+                    <div style={{ fontSize: 11, color: "#64748b", fontWeight: 600, marginBottom: 4 }}>📌 관련 조항 상세</div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                      <span style={{ width: 10, height: 10, borderRadius: "50%", background: TYPE_COLORS[cellLaw?.type] || "#666", display: "inline-block" }} />
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "#f1f5f9" }}>{cellLaw?.label}</span>
+                    </div>
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 4, background: (cellArea?.color || "#666") + "22", border: `1px solid ${(cellArea?.color || "#666")}44` }}>
+                      <span style={{ fontSize: 12 }}>{cellArea?.icon}</span>
+                      <span style={{ fontSize: 11, color: cellArea?.color || "#94a3b8", fontWeight: 600 }}>{cellArea?.label}</span>
+                    </div>
+                  </div>
+                  <button onClick={() => setSelectedCell(null)}
+                    style={{ background: "#334155", border: "none", color: "#94a3b8", borderRadius: 6, width: 24, height: 24, cursor: "pointer", fontSize: 14, lineHeight: "24px", padding: 0 }}>
+                    ×
+                  </button>
+                </div>
+
+                {/* Law metadata */}
+                <div style={{ padding: "8px 10px", background: "#0f172a", borderRadius: 8, marginBottom: 12 }}>
+                  <div style={{ fontSize: 10, color: "#64748b" }}>{cellLaw?.sublabel}</div>
+                  <div style={{ fontSize: 11, color: "#cbd5e1", marginTop: 4, lineHeight: 1.5 }}>{cellLaw?.description}</div>
+                  {LAW_URLS[selectedCell.lawId] && (
+                    <a href={LAW_URLS[selectedCell.lawId]} target="_blank" rel="noopener noreferrer"
+                      style={{ fontSize: 10, color: "#6366f1", textDecoration: "none", display: "inline-block", marginTop: 6 }}>
+                      법제처 원문 보기 ↗
+                    </a>
+                  )}
+                </div>
+
+                {/* Article List */}
+                {cellArticles ? (
+                  <div>
+                    <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 600, marginBottom: 8 }}>
+                      관련 조항 ({cellArticles.length}건)
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 400, overflowY: "auto" }}>
+                      {cellArticles.map((item, idx) => (
+                        <div key={idx} style={{
+                          padding: "10px 12px", background: "#0f172a", borderRadius: 8,
+                          borderLeft: `3px solid ${cellArea?.color || "#6366f1"}`,
+                        }}>
+                          <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 4 }}>
+                            <span style={{
+                              fontSize: 11, fontWeight: 700, color: cellArea?.color || "#a5b4fc",
+                              padding: "1px 6px", borderRadius: 4,
+                              background: (cellArea?.color || "#6366f1") + "15",
+                              whiteSpace: "nowrap",
+                            }}>
+                              {item.art}
+                            </span>
+                            <span style={{ fontSize: 11, fontWeight: 600, color: "#e2e8f0" }}>{item.title}</span>
+                          </div>
+                          <div style={{ fontSize: 11, color: "#94a3b8", lineHeight: 1.6 }}>{item.desc}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ padding: "20px 10px", textAlign: "center" }}>
+                    <span style={{ fontSize: 24, display: "block", marginBottom: 8 }}>📄</span>
+                    <div style={{ fontSize: 11, color: "#64748b" }}>
+                      이 법률은 해당 프로젝트 분야와 관련이 있으나,<br />
+                      세부 조항 매핑은 아직 준비 중입니다.
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        )}
+          );
+        })()}
       </div>
 
       {/* Footer */}
