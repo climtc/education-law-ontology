@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import * as d3 from "d3";
 import CurriculumOntology from "./CurriculumOntology";
+import StandardsOntology from "./StandardsOntology";
 
 // ═══════════════════════════════════════════════════════════════
 // 한국 교육법률 온톨로지 시각화 + 멀티에이전트 시뮬레이션
@@ -687,6 +688,7 @@ export default function EducationLawOntologyApp() {
             {[
               { id: "matrix", label: "📋 법률-프로젝트 매핑", disabled: false },
               { id: "curriculum", label: "📚 교육과정 온톨로지", disabled: false },
+              { id: "standards", label: "🎯 성취기준", disabled: false },
               { id: "simulation", label: "🤖 멀티에이전트 시뮬레이션", disabled: true },
               { id: "graph", label: "📊 법률 온톨로지 그래프", disabled: true },
             ].map(tab => (
@@ -715,6 +717,9 @@ export default function EducationLawOntologyApp() {
 
         {/* ── Tab: 교육과정 온톨로지 ── */}
         {activeTab === "curriculum" && <CurriculumOntology />}
+
+        {/* ── Tab: 성취기준 엔티티 온톨로지 ── */}
+        {activeTab === "standards" && <StandardsOntology />}
 
         {/* ── Tab 1: Ontology Graph ── */}
         {activeTab === "graph" && (
