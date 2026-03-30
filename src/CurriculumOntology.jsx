@@ -1,694 +1,325 @@
-import React, { useState, useEffect, useRef } from "react";
-import * as d3 from "d3";
-import { CURRICULUM_HIERARCHY, SUBJECT_COLORS, CURRICULUM_META } from "./curriculumData";
+import { useState, useMemo, useCallback } from "react";
+import { STANDARDS, SUBJECT_COLORS, GRADE_GROUPS, AREAS_BY_SUBJECT, SUBJECTS } from "./curriculumData";
 
-// ============================================================================
-// HELPERS
-// ============================================================================
+// ── 교과 한글 라벨 ──
+const SUBJECT_LABELS = {
+  "국어": "국어", "도덕": "도덕", "사회": "사회", "수학": "수학",
+  "과학": "과학", "실과_기술가정": "실과·기술가정", "정보": "정보",
+  "영어": "영어", "미술": "미술",
+};
 
-function countLeaves(node) {
-  if (!node.children || node.children.length === 0) return 1;
-  return node.children.reduce((sum, child) => sum + countLeaves(child), 0);
-}
-
-function getNodeColor(node) {
-  if (node.data.type === "교과") {
-    return SUBJECT_COLORS[node.data.name] || "#94a3b8";
-  }
-  // Find parent subject (교과)
-  let parent = node.parent;
-  while (parent) {
-    if (parent.data.type === "교과") {
-      return SUBJECT_COLORS[parent.data.name] || "#94a3b8";
-    }
-    parent = parent.parent;
-  }
-  return "#94a3b8";
-}
-
-function getNodeRadius(node) {
-  const depthMap = {
-    교육과정: 20,
-    교과: 14,
-    학년군: 10,
-    내용영역: 8,
-    성취기준: 5,
-  };
-  return depthMap[node.data.type] || 8;
-}
-
-function getBreadcrumb(node) {
-  const parts = [];
-  let current = node;
-  while (current) {
-    if (current.data.type !== "교육과정") {
-      parts.unshift(current.data.name);
-    }
-    current = current.parent;
-  }
-  return parts;
-}
-
-function searchMatches(node, query) {
-  if (!query) return false;
-  const lowerQuery = query.toLowerCase();
-
-  if (node.data.type === "성취기준") {
-    const code = node.data.name.toLowerCase();
-    const text = (node.data.text || "").toLowerCase();
-    return code.includes(lowerQuery) || text.includes(lowerQuery);
-  }
-  return false;
-}
-
-function hasMatchingDescendant(node, query) {
-  if (!query) return true;
-  if (searchMatches(node, query)) return true;
-  if (node.children) {
-    return node.children.some((child) => hasMatchingDescendant(child, query));
-  }
-  return false;
-}
-
-// ============================================================================
-// MAIN COMPONENT
-// ============================================================================
+const GRADE_LABELS = {
+  "초1~2": "초 1~2", "초3~4": "초 3~4", "초5~6": "초 5~6", "중1~3": "중 1~3",
+};
 
 export default function CurriculumOntology() {
-  const svgRef = useRef(null);
-  const [selectedSubjects, setSelectedSubjects] = useState(new Set(Object.keys(SUBJECT_COLORS)));
+  // ── 필터 상태 ──
+  const [selectedSubjects, setSelectedSubjects] = useState(new Set(SUBJECTS));
+  const [selectedGrades, setSelectedGrades] = useState(new Set(GRADE_GROUPS));
+  const [selectedArea, setSelectedArea] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedNode, setSelectedNode] = useState(null);
-  const [expandedNodes, setExpandedNodes] = useState(new Set());
-  const [hierarchyData, setHierarchyData] = useState(null);
+  const [expandedCode, setExpandedCode] = useState(null);
+  const [sortBy, setSortBy] = useState("code");
 
-  // Initialize expanded nodes (root + all 교과 nodes)
-  useEffect(() => {
-    const expanded = new Set();
-    expanded.add("2022 개정 교육과정");
-    if (CURRICULUM_HIERARCHY.children) {
-      CURRICULUM_HIERARCHY.children.forEach((subject) => {
-        expanded.add(subject.name);
-      });
+  // ── 필터링 ──
+  const filtered = useMemo(() => {
+    let result = STANDARDS;
+    if (selectedSubjects.size < SUBJECTS.length) {
+      result = result.filter(s => selectedSubjects.has(s.subject));
     }
-    setExpandedNodes(expanded);
-    setHierarchyData(CURRICULUM_HIERARCHY);
+    if (selectedGrades.size < GRADE_GROUPS.length) {
+      result = result.filter(s => selectedGrades.has(s.gradeGroup));
+    }
+    if (selectedArea) {
+      result = result.filter(s => s.area === selectedArea);
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      result = result.filter(s =>
+        s.code.toLowerCase().includes(q) ||
+        s.text.toLowerCase().includes(q) ||
+        (s.explanation && s.explanation.toLowerCase().includes(q))
+      );
+    }
+    if (sortBy === "subject") {
+      result = [...result].sort((a, b) => a.subject.localeCompare(b.subject) || a.code.localeCompare(b.code));
+    } else if (sortBy === "grade") {
+      const go = { "초1~2": 0, "초3~4": 1, "초5~6": 2, "중1~3": 3 };
+      result = [...result].sort((a, b) => (go[a.gradeGroup] ?? 9) - (go[b.gradeGroup] ?? 9) || a.code.localeCompare(b.code));
+    }
+    return result;
+  }, [selectedSubjects, selectedGrades, selectedArea, searchQuery, sortBy]);
+
+  // ── 현재 필터에 해당하는 내용영역 ──
+  const availableAreas = useMemo(() => {
+    const areas = new Set();
+    for (const subj of selectedSubjects) {
+      (AREAS_BY_SUBJECT[subj] || []).forEach(a => areas.add(a));
+    }
+    return [...areas];
+  }, [selectedSubjects]);
+
+  // ── 교과별 통계 ──
+  const subjectCounts = useMemo(() => {
+    const counts = {};
+    SUBJECTS.forEach(s => { counts[s] = 0; });
+    filtered.forEach(s => { counts[s.subject] = (counts[s.subject] || 0) + 1; });
+    return counts;
+  }, [filtered]);
+
+  // ── 토글 ──
+  const toggleSubject = useCallback((subj) => {
+    setSelectedSubjects(prev => {
+      const next = new Set(prev);
+      if (next.has(subj)) next.delete(subj); else next.add(subj);
+      return next;
+    });
+    setSelectedArea(null);
   }, []);
 
-  // Count visible standards
-  function countVisibleStandards() {
-    if (!hierarchyData) return 0;
-
-    function countMatching(node) {
-      if (node.type === "성취기준") {
-        return searchMatches({ data: node }, searchQuery) && selectedSubjects.has(getSubjectName(node)) ? 1 : 0;
-      }
-      if (!node.children) return 0;
-      return node.children.reduce((sum, child) => sum + countMatching(child), 0);
-    }
-
-    return countMatching(hierarchyData);
-  }
-
-  function getSubjectName(node) {
-    let current = node;
-    while (current) {
-      if (current.type === "교과") return current.name;
-      current = current.parent;
-    }
-    return null;
-  }
-
-  // Toggle subject filter
-  function toggleSubject(subject) {
-    const newSet = new Set(selectedSubjects);
-    if (newSet.has(subject)) {
-      newSet.delete(subject);
-    } else {
-      newSet.add(subject);
-    }
-    setSelectedSubjects(newSet);
-  }
-
-  // Expand/collapse all
-  function expandAll() {
-    const expanded = new Set();
-    function collectAll(node) {
-      expanded.add(node.name);
-      if (node.children) {
-        node.children.forEach(collectAll);
-      }
-    }
-    collectAll(hierarchyData);
-    setExpandedNodes(expanded);
-  }
-
-  function collapseAll() {
-    const expanded = new Set();
-    expanded.add("2022 개정 교육과정");
-    if (CURRICULUM_HIERARCHY.children) {
-      CURRICULUM_HIERARCHY.children.forEach((subject) => {
-        expanded.add(subject.name);
-      });
-    }
-    setExpandedNodes(expanded);
-  }
-
-  // D3 Tree Visualization
-  useEffect(() => {
-    if (!svgRef.current || !hierarchyData) return;
-
-    // Filter data based on subject and search
-    function filterNode(node) {
-      if (node.type === "교과" && !selectedSubjects.has(node.name)) {
-        return false;
-      }
-
-      if (node.type === "성취기준") {
-        const subject = getSubjectName(node);
-        if (!selectedSubjects.has(subject)) return false;
-        if (searchQuery && !searchMatches({ data: node }, searchQuery)) return false;
-        return true;
-      }
-
-      if (node.children) {
-        const hasValidChild = node.children.some(filterNode);
-        return hasValidChild || node.type !== "성취기준";
-      }
-
-      return true;
-    }
-
-    function buildFilteredTree(node) {
-      if (!filterNode(node)) return null;
-
-      const filtered = { ...node };
-      if (node.children) {
-        filtered.children = node.children
-          .map(buildFilteredTree)
-          .filter((child) => child !== null);
-      }
-      return filtered;
-    }
-
-    const filteredData = buildFilteredTree(hierarchyData);
-    if (!filteredData) return;
-
-    // Create hierarchy
-    const root = d3.hierarchy(filteredData);
-    const treeLayout = d3.tree().size([800, 1200]);
-    treeLayout(root);
-
-    // SVG setup
-    const container = svgRef.current;
-    const width = container.clientWidth || 1200;
-    const height = container.clientHeight || 800;
-
-    let svg = d3.select(svgRef.current).select("svg");
-    if (svg.empty()) {
-      svg = d3
-        .select(svgRef.current)
-        .append("svg")
-        .attr("width", width)
-        .attr("height", height)
-        .style("background", "#0a0e17");
-    } else {
-      svg.attr("width", width).attr("height", height);
-    }
-
-    // Clear previous content
-    svg.selectAll("*").remove();
-
-    // Add group for zoom/pan
-    let g = svg.append("g");
-
-    // Add zoom behavior
-    const zoom = d3.zoom().on("zoom", (event) => {
-      g.attr("transform", event.transform);
+  const toggleGrade = useCallback((g) => {
+    setSelectedGrades(prev => {
+      const next = new Set(prev);
+      if (next.has(g)) next.delete(g); else next.add(g);
+      return next;
     });
-    svg.call(zoom);
+  }, []);
 
-    // Links
-    g.selectAll(".link")
-      .data(root.links())
-      .enter()
-      .append("path")
-      .attr("class", "link")
-      .attr(
-        "d",
-        d3
-          .linkHorizontal()
-          .x((d) => d.y)
-          .y((d) => d.x)
-      )
-      .attr("fill", "none")
-      .attr("stroke", "#334155")
-      .attr("stroke-opacity", 0.6)
-      .attr("stroke-width", 2);
+  const selectAllSubjects = () => { setSelectedSubjects(new Set(SUBJECTS)); setSelectedArea(null); };
+  const clearAllSubjects = () => { setSelectedSubjects(new Set()); setSelectedArea(null); };
 
-    // Nodes
-    const nodes = g
-      .selectAll(".node")
-      .data(root.descendants())
-      .enter()
-      .append("g")
-      .attr("class", "node")
-      .attr("transform", (d) => `translate(${d.y},${d.x})`);
-
-    // Node circles
-    nodes
-      .append("circle")
-      .attr("r", (d) => getNodeRadius(d))
-      .attr("fill", (d) => getNodeColor(d))
-      .attr("opacity", 0.8)
-      .attr("stroke", "#e2e8f0")
-      .attr("stroke-width", 1)
-      .style("cursor", "pointer")
-      .on("mouseover", function (event, d) {
-        d3.select(this).attr("opacity", 1).attr("stroke-width", 2);
-      })
-      .on("mouseout", function (event, d) {
-        d3.select(this).attr("opacity", 0.8).attr("stroke-width", 1);
-      })
-      .on("click", (event, d) => {
-        event.stopPropagation();
-
-        if (d.data.children && d.data.children.length > 0) {
-          const newExpanded = new Set(expandedNodes);
-          if (newExpanded.has(d.data.name)) {
-            newExpanded.delete(d.data.name);
-          } else {
-            newExpanded.add(d.data.name);
-          }
-          setExpandedNodes(newExpanded);
-        } else {
-          setSelectedNode(d);
-        }
-      });
-
-    // Node labels
-    nodes
-      .append("text")
-      .attr("dy", ".35em")
-      .attr("x", (d) => {
-        const isLeaf = !d.children || d.children.length === 0;
-        return isLeaf ? getNodeRadius(d) + 8 : -(getNodeRadius(d) + 8);
-      })
-      .attr("text-anchor", (d) => {
-        const isLeaf = !d.children || d.children.length === 0;
-        return isLeaf ? "start" : "end";
-      })
-      .attr("fill", "#e2e8f0")
-      .attr("font-size", "12px")
-      .attr("font-family", "system-ui, sans-serif")
-      .attr("pointer-events", "none")
-      .text((d) => d.data.name)
-      .each(function (d) {
-        const text = d3.select(this);
-        const bbox = this.getBBox();
-        if (bbox.width > 150) {
-          const words = d.data.name.split(/[\[\]()]/);
-          text.text(words[0] || d.data.name);
-        }
-      });
-
-    // Tooltips on hover
-    nodes.append("title").text((d) => {
-      let title = `${d.data.name}`;
-      if (d.data.type) title += ` (${d.data.type})`;
-      if (d.children) title += ` [${d.children.length} children]`;
-      return title;
-    });
-
-    // Initial transform
-    const initialScale = 0.9;
-    svg.call(
-      zoom.transform,
-      d3.zoomIdentity
-        .translate(width / 4, height / 2)
-        .scale(initialScale)
+  // ── 검색 하이라이트 ──
+  const highlightText = useCallback((text, query) => {
+    if (!query.trim()) return text;
+    const q = query.trim();
+    const regex = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
+    const parts = text.split(regex);
+    return parts.map((part, i) =>
+      regex.test(part)
+        ? <mark key={i} style={{ background: "#f59e0b33", color: "#fbbf24", padding: "0 2px", borderRadius: 2 }}>{part}</mark>
+        : part
     );
-  }, [hierarchyData, selectedSubjects, searchQuery, expandedNodes]);
+  }, []);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        width: "100%",
-        height: "100vh",
-        backgroundColor: "#0a0e17",
-        fontFamily: "system-ui, -apple-system, sans-serif",
-      }}
-    >
-      {/* LEFT SIDEBAR */}
-      <div
-        style={{
-          width: "300px",
-          backgroundColor: "#111827",
-          borderRight: "1px solid #1e293b",
-          padding: "20px",
-          overflowY: "auto",
-          color: "#e2e8f0",
-        }}
-      >
-        <h2 style={{ fontSize: "18px", fontWeight: "600", marginBottom: "20px" }}>
-          📚 2022 개정 교육과정
-        </h2>
+    <div style={{ display: "flex", gap: 0, minHeight: "calc(100vh - 200px)" }}>
 
-        {/* Search Input */}
-        <div style={{ marginBottom: "20px" }}>
-          <input
-            type="text"
-            placeholder="성취기준 검색..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "8px 12px",
-              backgroundColor: "#1e293b",
-              border: "1px solid #334155",
-              borderRadius: "6px",
-              color: "#e2e8f0",
-              fontSize: "13px",
-              boxSizing: "border-box",
-            }}
-          />
+      {/* ══ 좌측: 필터 ══ */}
+      <div style={{
+        width: 280, flexShrink: 0, background: "#111827",
+        borderRight: "1px solid #1e293b", padding: 16, overflowY: "auto",
+        display: "flex", flexDirection: "column", gap: 16,
+        maxHeight: "calc(100vh - 200px)",
+      }}>
+
+        {/* 검색 */}
+        <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+          placeholder="성취기준 검색 (코드 또는 내용)"
+          style={{
+            width: "100%", padding: "10px 12px", borderRadius: 8,
+            border: "1px solid #334155", background: "#0f172a", color: "#e2e8f0",
+            fontSize: 13, outline: "none", boxSizing: "border-box",
+          }} />
+
+        {/* 통계 */}
+        <div style={{ padding: "10px 12px", background: "#0f172a", borderRadius: 8, border: "1px solid #1e293b" }}>
+          <div style={{ fontSize: 24, fontWeight: 800, color: "#f8fafc", letterSpacing: -1 }}>
+            {filtered.length}
+            <span style={{ fontSize: 13, fontWeight: 400, color: "#64748b", marginLeft: 6 }}>/ {STANDARDS.length}</span>
+          </div>
+          <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>표시 중인 성취기준</div>
         </div>
 
-        {/* Subject Filters */}
-        <div style={{ marginBottom: "20px" }}>
-          <h3
-            style={{
-              fontSize: "12px",
-              fontWeight: "600",
-              color: "#94a3b8",
-              marginBottom: "10px",
-              textTransform: "uppercase",
-              letterSpacing: "0.5px",
-            }}
-          >
-            교과 필터
-          </h3>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-            {Object.entries(SUBJECT_COLORS).map(([subject, color]) => (
-              <button
-                key={subject}
-                onClick={() => toggleSubject(subject)}
+        {/* 교과 */}
+        <div>
+          <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>교과</span>
+            <span>
+              <button onClick={selectAllSubjects} style={linkBtnStyle}>전체</button>
+              {" / "}
+              <button onClick={clearAllSubjects} style={linkBtnStyle}>해제</button>
+            </span>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            {SUBJECTS.map(subj => {
+              const active = selectedSubjects.has(subj);
+              const color = SUBJECT_COLORS[subj];
+              const count = subjectCounts[subj] || 0;
+              return (
+                <button key={subj} onClick={() => toggleSubject(subj)}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    padding: "6px 10px", borderRadius: 6, border: "none",
+                    background: active ? `${color}18` : "transparent",
+                    color: active ? color : "#475569",
+                    cursor: "pointer", fontSize: 13, textAlign: "left",
+                    transition: "all 0.15s", opacity: active ? 1 : 0.6,
+                  }}>
+                  <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{
+                      width: 10, height: 10, borderRadius: "50%",
+                      background: active ? color : "#334155",
+                      border: `2px solid ${active ? color : "#475569"}`,
+                      flexShrink: 0,
+                    }} />
+                    {SUBJECT_LABELS[subj] || subj}
+                  </span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: active ? color : "#475569" }}>{count}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 학년군 */}
+        <div>
+          <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>학년군</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+            {GRADE_GROUPS.map(g => {
+              const active = selectedGrades.has(g);
+              return (
+                <button key={g} onClick={() => toggleGrade(g)}
+                  style={{
+                    padding: "5px 10px", borderRadius: 6, border: "1px solid",
+                    borderColor: active ? "#6366f1" : "#1e293b",
+                    background: active ? "#6366f120" : "transparent",
+                    color: active ? "#a5b4fc" : "#475569",
+                    cursor: "pointer", fontSize: 12, transition: "all 0.15s",
+                  }}>
+                  {GRADE_LABELS[g] || g}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 내용영역 */}
+        {availableAreas.length > 0 && (
+          <div>
+            <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>내용영역</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <button onClick={() => setSelectedArea(null)}
+                style={{ ...areaBtnBase, background: !selectedArea ? "#1e293b" : "transparent", color: !selectedArea ? "#e2e8f0" : "#475569" }}>
+                전체 영역
+              </button>
+              {availableAreas.map(a => (
+                <button key={a} onClick={() => setSelectedArea(selectedArea === a ? null : a)}
+                  style={{ ...areaBtnBase, background: selectedArea === a ? "#1e293b" : "transparent", color: selectedArea === a ? "#e2e8f0" : "#475569" }}>
+                  {a}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 정렬 */}
+        <div>
+          <div style={{ fontSize: 11, color: "#64748b", marginBottom: 6, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1 }}>정렬</div>
+          <div style={{ display: "flex", gap: 4 }}>
+            {[["code", "코드순"], ["subject", "교과순"], ["grade", "학년순"]].map(([val, label]) => (
+              <button key={val} onClick={() => setSortBy(val)}
                 style={{
-                  padding: "6px 12px",
-                  borderRadius: "20px",
-                  border: "1px solid " + color,
-                  backgroundColor: selectedSubjects.has(subject)
-                    ? color + "33"
-                    : "transparent",
-                  color: selectedSubjects.has(subject) ? color : "#94a3b8",
-                  fontSize: "12px",
-                  fontWeight: "500",
-                  cursor: "pointer",
-                  transition: "all 0.2s",
-                }}
-                onMouseEnter={(e) => {
-                  if (selectedSubjects.has(subject)) {
-                    e.target.style.backgroundColor = color + "4d";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (selectedSubjects.has(subject)) {
-                    e.target.style.backgroundColor = color + "33";
-                  }
-                }}
-              >
-                {subject}
+                  padding: "4px 10px", borderRadius: 6, border: "1px solid",
+                  borderColor: sortBy === val ? "#6366f1" : "#1e293b",
+                  background: sortBy === val ? "#6366f120" : "transparent",
+                  color: sortBy === val ? "#a5b4fc" : "#475569",
+                  cursor: "pointer", fontSize: 11,
+                }}>
+                {label}
               </button>
             ))}
           </div>
         </div>
-
-        {/* Statistics */}
-        <div
-          style={{
-            padding: "12px",
-            backgroundColor: "#1e293b",
-            borderRadius: "6px",
-            marginBottom: "20px",
-            fontSize: "13px",
-            color: "#cbd5e1",
-          }}
-        >
-          <div style={{ lineHeight: "1.6" }}>
-            <div>전체: {CURRICULUM_META.totalStandards}개 성취기준</div>
-            <div>표시: {countVisibleStandards()}개</div>
-          </div>
-        </div>
-
-        {/* Expand/Collapse Buttons */}
-        <div style={{ display: "flex", gap: "8px" }}>
-          <button
-            onClick={expandAll}
-            style={{
-              flex: 1,
-              padding: "8px 12px",
-              backgroundColor: "#374151",
-              color: "#e2e8f0",
-              border: "none",
-              borderRadius: "6px",
-              fontSize: "12px",
-              fontWeight: "500",
-              cursor: "pointer",
-              transition: "background 0.2s",
-            }}
-            onMouseEnter={(e) => (e.target.style.backgroundColor = "#4b5563")}
-            onMouseLeave={(e) => (e.target.style.backgroundColor = "#374151")}
-          >
-            전체 펼치기
-          </button>
-          <button
-            onClick={collapseAll}
-            style={{
-              flex: 1,
-              padding: "8px 12px",
-              backgroundColor: "#374151",
-              color: "#e2e8f0",
-              border: "none",
-              borderRadius: "6px",
-              fontSize: "12px",
-              fontWeight: "500",
-              cursor: "pointer",
-              transition: "background 0.2s",
-            }}
-            onMouseEnter={(e) => (e.target.style.backgroundColor = "#4b5563")}
-            onMouseLeave={(e) => (e.target.style.backgroundColor = "#374151")}
-          >
-            전체 접기
-          </button>
-        </div>
       </div>
 
-      {/* CENTER - D3 TREE VISUALIZATION */}
-      <div
-        ref={svgRef}
-        style={{
-          flex: 1,
-          backgroundColor: "#0a0e17",
-          position: "relative",
-          borderRight: selectedNode ? "1px solid #1e293b" : "none",
-        }}
-      />
-
-      {/* RIGHT DETAIL PANEL */}
-      {selectedNode && (
-        <div
-          style={{
-            width: "350px",
-            backgroundColor: "#111827",
-            borderLeft: "1px solid #1e293b",
-            padding: "20px",
-            overflowY: "auto",
-            color: "#e2e8f0",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          {/* Close Button */}
-          <button
-            onClick={() => setSelectedNode(null)}
-            style={{
-              alignSelf: "flex-end",
-              background: "none",
-              border: "none",
-              color: "#94a3b8",
-              fontSize: "20px",
-              cursor: "pointer",
-              padding: "0",
-              marginBottom: "16px",
-            }}
-          >
-            ×
-          </button>
-
-          {/* Node Type Badge */}
-          <div
-            style={{
-              display: "inline-block",
-              padding: "4px 10px",
-              backgroundColor: getNodeColor(selectedNode) + "33",
-              color: getNodeColor(selectedNode),
-              borderRadius: "4px",
-              fontSize: "11px",
-              fontWeight: "600",
-              marginBottom: "12px",
-              width: "fit-content",
-              textTransform: "uppercase",
-              letterSpacing: "0.5px",
-            }}
-          >
-            {selectedNode.data.type}
+      {/* ══ 메인: 성취기준 리스트 ══ */}
+      <div style={{ flex: 1, overflowY: "auto", padding: "16px 24px", maxHeight: "calc(100vh - 200px)" }}>
+        {filtered.length === 0 ? (
+          <div style={{ textAlign: "center", padding: 60, color: "#475569" }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
+            <div style={{ fontSize: 15 }}>조건에 맞는 성취기준이 없습니다</div>
+            <div style={{ fontSize: 12, marginTop: 8 }}>필터를 조정하거나 검색어를 변경해 보세요</div>
           </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {filtered.map((std, i) => {
+              const color = SUBJECT_COLORS[std.subject] || "#94a3b8";
+              const uid = `${std.code}-${i}`;
+              const isExpanded = expandedCode === uid;
 
-          {/* Node Name */}
-          <h1
-            style={{
-              fontSize: "20px",
-              fontWeight: "700",
-              marginBottom: "16px",
-              color: "#f8fafc",
-              wordWrap: "break-word",
-            }}
-          >
-            {selectedNode.data.name}
-          </h1>
+              return (
+                <div key={uid} onClick={() => setExpandedCode(isExpanded ? null : uid)}
+                  style={{
+                    background: isExpanded ? "#111827" : "#0f172a",
+                    border: `1px solid ${isExpanded ? color + "40" : "#1e293b"}`,
+                    borderRadius: 10,
+                    padding: isExpanded ? "16px 20px" : "12px 16px",
+                    cursor: "pointer", transition: "all 0.2s",
+                  }}>
 
-          {/* Breadcrumb */}
-          <div
-            style={{
-              fontSize: "12px",
-              color: "#94a3b8",
-              marginBottom: "20px",
-              paddingBottom: "12px",
-              borderBottom: "1px solid #1e293b",
-            }}
-          >
-            {getBreadcrumb(selectedNode)
-              .map((part, idx) => (
-                <span key={idx}>
-                  {part}
-                  {idx < getBreadcrumb(selectedNode).length - 1 && " > "}
-                </span>
-              ))
-              .reduce((prev, curr) => (prev === null ? [curr] : [prev, " > ", curr]), null)}
-          </div>
-
-          {/* Content based on node type */}
-          {selectedNode.data.type === "성취기준" ? (
-            <div>
-              <h3
-                style={{
-                  fontSize: "11px",
-                  fontWeight: "600",
-                  color: "#94a3b8",
-                  marginBottom: "12px",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.5px",
-                }}
-              >
-                성취기준 원문
-              </h3>
-              <div
-                style={{
-                  fontSize: "18px",
-                  color: "#f8fafc",
-                  lineHeight: "1.7",
-                  backgroundColor: "#0a0e17",
-                  padding: "16px",
-                  borderRadius: "6px",
-                  border: "1px solid #1e293b",
-                  wordWrap: "break-word",
-                  whiteSpace: "pre-wrap",
-                }}
-              >
-                {selectedNode.data.text || "상세 설명이 없습니다."}
-              </div>
-            </div>
-          ) : (
-            <div>
-              {selectedNode.children && selectedNode.children.length > 0 && (
-                <>
-                  <h3
-                    style={{
-                      fontSize: "11px",
-                      fontWeight: "600",
-                      color: "#94a3b8",
-                      marginBottom: "12px",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.5px",
-                    }}
-                  >
-                    항목 정보
-                  </h3>
-                  <div
-                    style={{
-                      fontSize: "13px",
-                      color: "#cbd5e1",
-                      backgroundColor: "#1e293b",
-                      padding: "12px",
-                      borderRadius: "6px",
-                      marginBottom: "16px",
-                    }}
-                  >
-                    <div>하위 항목: {selectedNode.children.length}개</div>
+                  {/* 코드 + 태그 */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: isExpanded ? 12 : 6, flexWrap: "wrap" }}>
+                    <span style={{
+                      fontFamily: "'SF Mono', 'Fira Code', monospace",
+                      fontSize: isExpanded ? 16 : 14, fontWeight: 700, color: color,
+                      letterSpacing: 0.5,
+                    }}>
+                      {std.code}
+                    </span>
+                    <span style={{ fontSize: 10, fontWeight: 600, padding: "2px 8px", borderRadius: 10, background: `${color}20`, color, whiteSpace: "nowrap" }}>
+                      {SUBJECT_LABELS[std.subject] || std.subject}
+                    </span>
+                    <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 10, background: "#1e293b", color: "#94a3b8", whiteSpace: "nowrap" }}>
+                      {GRADE_LABELS[std.gradeGroup] || std.gradeGroup}
+                    </span>
+                    <span style={{ fontSize: 10, color: "#475569", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {std.area}
+                    </span>
+                    {std.explanation && (
+                      <span style={{ fontSize: 9, padding: "1px 6px", borderRadius: 10, background: "#1e293b", color: "#64748b", marginLeft: "auto", whiteSpace: "nowrap" }}>
+                        해설 있음
+                      </span>
+                    )}
                   </div>
-                </>
-              )}
-              {selectedNode.data.type === "교과" && (
-                <>
-                  <h3
-                    style={{
-                      fontSize: "11px",
-                      fontWeight: "600",
-                      color: "#94a3b8",
-                      marginBottom: "12px",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.5px",
-                    }}
-                  >
-                    내용 영역
-                  </h3>
-                  {CURRICULUM_META.subjects[selectedNode.data.name]?.내용영역 && (
-                    <ul
-                      style={{
-                        fontSize: "12px",
-                        color: "#cbd5e1",
-                        paddingLeft: "0",
-                        listStyle: "none",
-                      }}
-                    >
-                      {CURRICULUM_META.subjects[selectedNode.data.name].내용영역.map(
-                        (area, idx) => (
-                          <li
-                            key={idx}
-                            style={{
-                              padding: "6px 0",
-                              borderBottom:
-                                idx <
-                                CURRICULUM_META.subjects[selectedNode.data.name].내용영역
-                                  .length -
-                                  1
-                                  ? "1px solid #1e293b"
-                                  : "none",
-                            }}
-                          >
-                            • {area}
-                          </li>
-                        )
-                      )}
-                    </ul>
+
+                  {/* 원문 */}
+                  <div style={{
+                    fontSize: isExpanded ? 16 : 14,
+                    lineHeight: isExpanded ? 1.8 : 1.6,
+                    color: "#e2e8f0", wordBreak: "keep-all",
+                  }}>
+                    {searchQuery.trim() ? highlightText(std.text, searchQuery) : std.text}
+                  </div>
+
+                  {/* 확장: 해설 */}
+                  {isExpanded && std.explanation && (
+                    <div style={{ marginTop: 14, paddingTop: 14, borderTop: `1px solid ${color}20` }}>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: "#64748b", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+                        성취기준 해설
+                      </div>
+                      <div style={{ fontSize: 14, lineHeight: 1.8, color: "#94a3b8", wordBreak: "keep-all" }}>
+                        {searchQuery.trim() ? highlightText(std.explanation, searchQuery) : std.explanation}
+                      </div>
+                    </div>
                   )}
-                </>
-              )}
-            </div>
-          )}
-        </div>
-      )}
+
+                  {/* 확장: 메타 */}
+                  {isExpanded && (
+                    <div style={{ marginTop: 12, display: "flex", gap: 16, fontSize: 11, color: "#475569" }}>
+                      <span>교과: <strong style={{ color }}>{SUBJECT_LABELS[std.subject]}</strong></span>
+                      <span>학년군: <strong style={{ color: "#a5b4fc" }}>{GRADE_LABELS[std.gradeGroup]}</strong></span>
+                      <span>내용영역: <strong style={{ color: "#94a3b8" }}>{std.area}</strong></span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
+
+const linkBtnStyle = { background: "none", border: "none", color: "#6366f1", cursor: "pointer", fontSize: 11, padding: 0 };
+const areaBtnBase = { padding: "5px 10px", borderRadius: 6, border: "none", cursor: "pointer", fontSize: 12, textAlign: "left", transition: "all 0.15s" };
