@@ -687,7 +687,7 @@ export default function EducationLawOntologyApp() {
           <div style={{ display: "flex", gap: 4, marginTop: 16 }}>
             {[
               { id: "matrix", label: "📋 법률-프로젝트 매핑", disabled: false },
-              { id: "curriculum", label: "📚 교육과정 온톨로지", disabled: false },
+              { id: "curriculum", label: "📚 교육과정 온톨로지", disabled: true },
               { id: "standards", label: "🎯 성취기준", disabled: false },
               { id: "simulation", label: "🤖 멀티에이전트 시뮬레이션", disabled: true },
               { id: "graph", label: "📊 법률 온톨로지 그래프", disabled: true },

@@ -4,13 +4,13 @@ import { STANDARDS, SUBJECT_COLORS, GRADE_GROUPS, AREAS_BY_SUBJECT, SUBJECTS } f
 import { ENTITIES, PROGRESSION, TREE_DATA, MATRIX_DATA, VERB_BY_SUBJECT, EXP_BY_SUBJECT } from "./standardsEntityData";
 
 // ── 상수 ──
-const SUBJECT_LABELS = {
-  "국어": "국어", "도덕": "도덕", "사회": "사회", "수학": "수학",
-  "과학": "과학", "실과_기술가정": "실과·기술가정", "정보": "정보",
-  "영어": "영어", "미술": "미술",
+// 35개 교과 라벨 (언더스코어 등 정리)
+const SUBJECT_LABELS = Object.fromEntries(SUBJECTS.map(s => [s, s.replace(/_/g, "·")]));
+const GRADE_LABELS = {
+  "초1~2": "초 1~2", "초3~4": "초 3~4", "초5~6": "초 5~6",
+  "중1~3": "중 1~3", "고등(선택)": "고등", "전문교과": "전문교과",
 };
-const GRADE_LABELS = { "초1~2": "초 1~2", "초3~4": "초 3~4", "초5~6": "초 5~6", "중1~3": "중 1~3" };
-const GRADE_ORDER = { "초1~2": 0, "초3~4": 1, "초5~6": 2, "중1~3": 3 };
+const GRADE_ORDER = { "초1~2": 0, "초3~4": 1, "초5~6": 2, "중1~3": 3, "고등(선택)": 4, "전문교과": 5 };
 const VERB_COLORS = { "능력": "#3b82f6", "행위": "#10b981", "태도": "#f59e0b", "기타": "#64748b" };
 const VIEWS = [
   { id: "treemap", label: "구조 맵" },
@@ -58,8 +58,8 @@ export default function StandardsOntology() {
         <div style={{ display: "flex", gap: 16, fontSize: 12, color: "#64748b" }}>
           <span><strong style={{ color: "#f8fafc", fontSize: 16 }}>{ENTITIES.length}</strong> 엔티티</span>
           <span><strong style={{ color: "#6366f1" }}>{ENTITIES.filter(e => e.hasExp).length}</strong> 해설</span>
-          <span><strong style={{ color: "#10b981" }}>9</strong> 교과</span>
-          <span><strong style={{ color: "#f59e0b" }}>42</strong> 내용영역</span>
+          <span><strong style={{ color: "#10b981" }}>{SUBJECTS.length}</strong> 교과</span>
+          <span><strong style={{ color: "#f59e0b" }}>{Object.values(AREAS_BY_SUBJECT).reduce((s, a) => s + a.length, 0)}</strong> 내용영역</span>
         </div>
       </div>
 
@@ -311,11 +311,11 @@ function MatrixView({ onSelect, onBrowse }) {
         </div>
 
         {/* 매트릭스 그리드 */}
-        <div style={{ display: "grid", gridTemplateColumns: `120px repeat(${GRADE_GROUPS.length}, 1fr)`, gap: 3 }}>
+        <div style={{ display: "grid", gridTemplateColumns: `140px repeat(${GRADE_GROUPS.length}, 1fr)`, gap: 2 }}>
           {/* Header row */}
           <div />
           {GRADE_GROUPS.map(g => (
-            <div key={g} style={{ textAlign: "center", fontSize: 12, fontWeight: 600, color: "#94a3b8", padding: "8px 0" }}>
+            <div key={g} style={{ textAlign: "center", fontSize: 11, fontWeight: 600, color: "#94a3b8", padding: "6px 0" }}>
               {GRADE_LABELS[g]}
             </div>
           ))}
@@ -324,9 +324,10 @@ function MatrixView({ onSelect, onBrowse }) {
           {sortedSubjects.map(subj => (
             <>
               <div key={subj + "-label"} style={{
-                display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: SUBJECT_COLORS[subj], fontWeight: 600,
+                display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: SUBJECT_COLORS[subj], fontWeight: 600,
+                overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis",
               }}>
-                <span style={{ width: 8, height: 8, borderRadius: "50%", background: SUBJECT_COLORS[subj], flexShrink: 0 }} />
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: SUBJECT_COLORS[subj], flexShrink: 0 }} />
                 {SUBJECT_LABELS[subj]}
               </div>
               {GRADE_GROUPS.map(g => {
@@ -365,9 +366,9 @@ function MatrixView({ onSelect, onBrowse }) {
                       padding: "12px 8px", borderRadius: 8, background: cellBg,
                       border: `2px solid ${isSelected ? "#6366f1" : "transparent"}`,
                       color: count === 0 ? "#334155" : "#e2e8f0",
-                      fontSize: subView === "verb" ? 10 : 16, fontWeight: 700,
+                      fontSize: subView === "verb" ? 9 : 13, fontWeight: 700,
                       cursor: count > 0 ? "pointer" : "default",
-                      transition: "all 0.15s", minHeight: 50,
+                      transition: "all 0.15s", minHeight: 32,
                     }}>
                     {cellContent}
                   </div>
@@ -511,7 +512,7 @@ function FlowView({ onSelect, onBrowse }) {
       .attr("fill", "#94a3b8")
       .attr("font-size", 13)
       .attr("font-weight", 700)
-      .text(g => GRADE_LABELS[g]);
+      .text(g => GRADE_LABELS[g] || g);
 
     // Area labels (left)
     svg.selectAll("text.area-label")
@@ -576,10 +577,10 @@ function FlowView({ onSelect, onBrowse }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
       {/* 교과 선택 */}
-      <div style={{ padding: "12px 20px", display: "flex", gap: 4, flexShrink: 0, borderBottom: "1px solid #1e293b" }}>
+      <div style={{ padding: "10px 20px", display: "flex", gap: 3, flexShrink: 0, borderBottom: "1px solid #1e293b", flexWrap: "wrap", maxHeight: 80, overflowY: "auto" }}>
         {SUBJECTS.map(s => (
           <button key={s} onClick={() => setSelectedSubject(s)} style={{
-            padding: "5px 12px", borderRadius: 6, fontSize: 12, fontWeight: selectedSubject === s ? 700 : 400,
+            padding: "3px 9px", borderRadius: 6, fontSize: 11, fontWeight: selectedSubject === s ? 700 : 400,
             border: `1px solid ${selectedSubject === s ? SUBJECT_COLORS[s] : "#1e293b"}`,
             background: selectedSubject === s ? SUBJECT_COLORS[s] + "20" : "transparent",
             color: selectedSubject === s ? SUBJECT_COLORS[s] : "#64748b", cursor: "pointer",
@@ -656,7 +657,7 @@ function BrowserView({ selectedEntity, onSelect, filterSubject, filterGrade, fil
   return (
     <div style={{ display: "flex", height: "100%" }}>
       {/* 좌측 필터 */}
-      <div style={{ width: 220, flexShrink: 0, borderRight: "1px solid #1e293b", padding: 14, overflowY: "auto", background: "#111827" }}>
+      <div style={{ width: 200, flexShrink: 0, borderRight: "1px solid #1e293b", padding: 12, overflowY: "auto", background: "#111827" }}>
         <input value={query || ""} onChange={e => { setQuery(e.target.value); setPage(0); }}
           placeholder="검색..." style={{
             width: "100%", padding: "8px 10px", borderRadius: 6, border: "1px solid #334155",
